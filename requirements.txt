@@ -1,0 +1,12 @@
+transformers
+ipywidgets
+torch
+sentencepiece
+datasets
+fiftyone
+numpy
+pandas
+flax==0.3.5
+git+https://github.com/patil-suraj/vqgan-jax.git
+git+https://github.com/borisdayma/dalle-mini.git
+git+https://github.com/openai/CLIP.git
