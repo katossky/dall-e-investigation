@@ -338,27 +338,76 @@ Processus d'entraînement:
 
 ### A.7 Understanding LSTM [^bpost_unlstm]
 
-### A.8 The unreasonnable effectiveness of RNNs [^bpost_efffeRNN]
+Les LSTM (Long-Short Term Memory) utilisent une boucle pour permettre une persistence de l'information d'une étape à l'autre dans le réseau de neurones. Ce type de NN cherche à réduire un problème classique des NN: ilsont du mal à transmettre de l'information à longue distance. 
 
-### A.9 Transformer model (1/2) [^vid_transf1/2]
+![](https://i.imgur.com/ZI7yjBv.png)
 
-[^vid_transf1/2]: **Vidéo**, Transformer Model (1/2): Attention Layers ,*https://www.youtube.com/watch?v=FC8PziPmxnQ*
+Comme le montr le schéma ci-dessus, on peut voir un RNN (réseau de neurones récurrent) comme une multitudes de copies du même NN se transmettant de l'information. Dans ce cas, on appelle unité chaque réplication du NN. On les utilise classiquement pour traiter des listes ou des séquences.
 
-[^bpost_efffeRNN]: **Article de blog**, The Unreasonable Effectiveness of Recurrent Neural Networks,*http://karpathy.github.io/2015/05/21/rnn-effectiveness/*
+L'architecure du LSTM présentée dans cet article de blog est la suivante:
+![](https://i.imgur.com/g5VzVKK.png)
 
-[^bpost_unlstm]: **Article de blog**, Understanding LSTM Networks, *http://colah.github.io/posts/2015-08-Understanding-LSTMs/*
+Légende:
+![](https://i.imgur.com/QfCTQOd.png)
 
-[^bpost_wltran]: **Article de blog**, Word Level English to Marathi Neural Machine Translation using Encoder-Decoder Model, *https://towardsdatascience.com/word-level-english-to-marathi-neural-machine-translation-using-seq2seq-encoder-decoder-lstm-model-1a913f2dc4a7*
+Le module répété dans le LSTM contient 4 NN, représentés par les rectangles ajunes et aussi appelés couches. La ligne noir en haut représente le "cell state" (c), qui passe d'une unité à l'autre en étant précautionneusement modifié. Ds informations peuvent être ajoutées ou enlevées, tel que contrôlé par les "gates", c'est-à-dire un réseau de neurones sigmoide suivi par une opération mathématique (les points roses, sigmoïde voulant dire que la sortie est normalisée, classiquement dans [0,1] ou [-1,1]). Ce n'est pas écrit noir sur blanc, mais je penseavoir compris que le cell state h est un **vecteur** (sinon les explications ont peu de sens). La ligne noire en bas de chaque unité est nommée h, probablement pour hidden state. 
 
-[^bpost_unVAE]: **Article de blog**, Understanding Variational Autoencoders (VAEs), *https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73*
+1. Le 1er NN est la *forget gate layer* prend en entrée l'état caché h(t-1) et l'input x(t) et produit un nombre entre 0 et 1 pour chaque nombre dans le cell state. 0 signifie qu'on élimine totalement l'information à cette position, alors que 1 implique de la garder. 
+2. Les 2 couches suivantes (les 2 NN suivants) décident quelle information ajouter. La "input gate layer" décide quelles valeurs du cell state seront mises à jour alors que la "tanh layer" crée un vecteur de nouvelles valeur candidats. On multiplie les 2 ensembles (de combien on veut changer chaque valeur * quelles changements) et on ajoute ce vecteur au cell state.
+3. La dernière chose à faire est de décider quel sera l'output à cette étape. Cet output ne contiendra qu'une partie seulement du cell state. D'une part on fait passer le cell state par une couche de normalisation tanh. D'autre part, Le 4ème NN, en se basant sur le hidden state h, décide ce que l'on va output du cell state. On fait alors le produit des deux. Le résultat est alors output, et passé à la cellule suivante en même temps que le cell state (qui n'a lui pas été modifié pendant cette dernière opération).
 
-[^bpost_att_mech]: **Article de blog**, Attention mechanism *https://blog.floydhub.com/attention-mechanism/*
+Il existe de nombreuses variations des LSTM, notamment le modèle GRU (Gated Reccurent Unit) qui est beaucoup plus simple.
 
-[^bpostRNNbeg]: **Article de blog**, A beginner's guide on reccurrent neural network with PyTorch, *https://blog.floydhub.com/a-beginners-guide-on-recurrent-neural-networks-with-pytorch/*
+### A.8 The unreasonnable effectiveness of RNNs [^bpost_efffeRNN] 
 
-[^bpost_ilutransfo]: **Article de blog**: The illustrated transformer, *http://jalammar.github.io/illustrated-transformer/*
+Ils sont très puissants dans leur capacité à traiter des séquences, ou des entrées normales transformées en séquence. Cela résulte de leur capacité à produire des outputs dépendant de l'input actuel, mais aussi des inputs passés. 
+
+A chaque étape, l'état interne caché est mis à jour avec une combinasion de l'état interne caché précédent et de l'input, puis un output est produit. Tout cela demande des opérations utilisant des matrices de paramètres, qui sont initialisées avec des nombres aléatoires puis évoluent en fonction de la loss (backpropagation j'imagine, qui n'est qu'une application inversée de la règle de la chaîne dans les dérivées). 
+
+Comme application, l'article présente le cas des modèles de langue au niveau des cahractères. Dans l'exemple, le modèle semble avoir du mal pour gérer la mémoire à très long-terme. De plus, en affichant les sorties à différents moments du processus d'apprentissage, on croit comprendre que le modèle apprend d'abord coment séparer les mots, puis les mots courts, puis les mots longs .. 
+Le degré d'activation d'une neurone en particulier peut parfois être lié à certaines caractéristiques du texte, comme les guillements ou la position sur une ligne. C'est assez rare, mais donne des exemples de moments où le deep learning est très puissant: on obtient une spécialisation sans qu'on l'ait codée explicitement. 
+
+### A.9 Transformer model (1/2): attention layers [^vid_transf1/2]
+
+Cette vidéo, de part la qualité des schémas proposés, est excellente pour comprendre le mécanisme d'attention. 
+
+A l'origine, ce mécanisme a été inventé pour améliorer les RNNs, mais on s'est ensuite rendus compte que l'attention sans les RNN (cas les transformer) fonctionnait très bien.
+
+On va ici considérer un modèle seq2seq avec un RNN, par exemple la traduction d'une phrase de l'anglais vers l'allemeand. L'encodeur recoit la phrase à traduire en anglaiset le décodeur qui recoit la phrase qu'il devrait donner comme traduction en allemand. La couche d'attention est utilisé pour calculer un *vecteur de contexte* à chaque fois qu'on veut générer un mot en allemand. 
+
+Des vecteurs *query* sont calculés comme transformation linéaire des états dans le décodeur, des vecteurs *key* et *values* sont générés à partir des états dans l'encodeur. Les poids sont alors calculés selon la formule dans l'image ci-dessous et les *vecteurs contextes* sont calculés comme la somme pondérée par ces poids des *values*. Les 3 matrices **W** sont initialisés avec des paramètres aléatoires, qui seront ensuite "appris" via les données.
+Chaque vecteur context dépend de toutes les clés et de toutes les valeurs, mais seulement de sa propre query. 
 
 
+![](https://i.imgur.com/Qq8e323.png)
+
+On peut ensuite abandonner le RNN mais garder le mécanisme d'attention, comme présentée dans la figure suivante: 
+![](https://i.imgur.com/7YSxeIg.png)
+
+La couche d'attention n'est pas récurrente mais génère toujours la séquence de sortie mot par mot.
+> Autorégressivement d'après ce que je comprends 
+> Je ne vois pas trop en quoi on a ici plus de récurrence
+> [name=Léo] 
+
+Pour résumer l'action de la couche d'attention: elle génère t vecteurs contextes en se basant sur les inputs de l'encodeur et du décodeur. Chaque c (output de la couche d'attention) ne connaît ici que l'input en cours du décodeur cad le mot généré à l'étape précédente (ce problème sera réglé avec la self-attention). Chaque c peut être passé dans un classifieur softmax renvoyant une distribution sur le dictionnaire (de vocabulaire), et on produit alors le mot suivant en échantillonnant dans cette classification. Ce mot est alors renvoyé dans le décodeur, qui peut recommencer.
+
+Dans la **self-attention**, n a une liste de vecteurs x1 à xm et à partir d'eux et de 3 matrices **W** (apprises sur les données), on génère un vecteur *q* (query), un *k* (key) et un *v* (value). Un poids alpha peut alors être calculé pour chaque xi à partir de sa query et de toutes les keys. Chaque vecteur contexte est alors obtenu comme la somme pondérée des vecteurs values par les poids alpha. 
+
+Calcul des pondérations (en ayant le mot x2 comme focus)
+![](https://i.imgur.com/SJ6VBWU.png)
+
+Calcul du vecteur contexte pour le mot 1: 
+![](https://i.imgur.com/4BQBQZH.png)
+
+Matriciellement, on peut résumer les calculs sous la forme:
+![](https://i.imgur.com/gLvcHsN.png)
+On a à la fin un vecteur contexte par input. Chaque vecteur contexte c dépend de **TOUS** les vecteurs clés et valeurs et donc de tous les inputs (c:2 dépend de x1 à xm). 
+
+D'une certaine manière, la différence entre l'attention et la self-attention est simplement: 
+![](https://i.imgur.com/MCUzP6G.png)
+
+
+---
 
 ### Bibliographie
 
@@ -388,7 +437,26 @@ Images from Text" (2021), https://openai.com/blog/dall-e
 
 - **Site:** https://cocodataset.org
 
-#### Bases sur les réseaux de neurones et le machine learning
+### Bases sur les réseaux de neurones et le machine learning
 - **Série de vidéos youtube**: Neural networks, https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi  
 - **Article de blog:** "First neural network for beginners ", https://towardsdatascience.com/first-neural-network-for-beginners-explained-with-code-4cfd37e06eaf
 - [^refvae]: **Article de blog:** Understanding variational auto-encoders, https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73
+
+### Sources annexes (pas rangées)
+
+
+[^vid_transf1/2]: **Vidéo**, Transformer Model (1/2): Attention Layers ,*https://www.youtube.com/watch?v=FC8PziPmxnQ*
+
+[^bpost_efffeRNN]: **Article de blog**, The Unreasonable Effectiveness of Recurrent Neural Networks,*http://karpathy.github.io/2015/05/21/rnn-effectiveness/*
+
+[^bpost_unlstm]: **Article de blog**, Understanding LSTM Networks, *http://colah.github.io/posts/2015-08-Understanding-LSTMs/*
+
+[^bpost_wltran]: **Article de blog**, Word Level English to Marathi Neural Machine Translation using Encoder-Decoder Model, *https://towardsdatascience.com/word-level-english-to-marathi-neural-machine-translation-using-seq2seq-encoder-decoder-lstm-model-1a913f2dc4a7*
+
+[^bpost_unVAE]: **Article de blog**, Understanding Variational Autoencoders (VAEs), *https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73*
+
+[^bpost_att_mech]: **Article de blog**, Attention mechanism *https://blog.floydhub.com/attention-mechanism/*
+
+[^bpostRNNbeg]: **Article de blog**, A beginner's guide on reccurrent neural network with PyTorch, *https://blog.floydhub.com/a-beginners-guide-on-recurrent-neural-networks-with-pytorch/*
+
+[^bpost_ilutransfo]: **Article de blog**: The illustrated transformer, *http://jalammar.github.io/illustrated-transformer/*
