@@ -124,17 +124,51 @@ A partir d'une caption pour chaque image de nos jeux de données, nous avons gé
 
 #### 1.B.2 Évaluer manuellement les images 
 
-En plus de la génération d'image à partir des descriptifs des jeux de données, nous avons essayé la génération d'image à partir de nos propres descriptifs pour voir quels sont les cas où mini-dalle arrivait à générer une image subjectivement correcte par rapport à la description demandée.
+
+Pour prendre en main le modèle, nous avons commencé à générer de nombreuses images à partir de "captions" choisies au préalable. Cela avait pour objectif de comprendre ce que mini dallE pouvait bien faire, afin de nous donner des pistes pour une adaptation du modèle. 
+
+Nous avons sélectionné un ensemble de features que nous voulions tester, et espérions obtenir de bons résultats pour certaines d'entre elles, car jusque là les quelques générations hasardeuses effectuées étaient d'un piètre niveau.
+
+Parmi les tests principaux réalisés, on compte:
+* Le tracés de formes géométriques basiques (cubes, triangle, cercle)
+* Le tracé de quelques objets communs (lit, gâteau, coeur)
+* L'intégration des couleurs aux formes demandées
+* L'intégration d'effets de texture (une balle faite avec du gazon, un chien en boix, un cube métallique)
+* La gestion des quantificateurs (2, trois, beaucoup) et d'adjectifs de taille (petit, grand, énorme)
+
+Les résultats furent ambivalents. Le succès des tracés de formes est très 'aléatoire' (une forme qui est bien tracée le sera toujours, mais aucun moyen de savoir à priori si mini DallE sait la dessiner, pour cela il faut surement prêter une attention particulière au dataset d'entrînement). La gestion des quantificateurs et des indications de taille laisse à désirer, il est difficile de conclure sur le peu d'échantillons réalisés pour le moment si mini DallE adapte la plupart du temps son tracé à ces indications. En revanche, les couleurs apparaissent (parfois subtilement, parfois largement), et les textures sont toujours tentées par dallE avec plus ou moins de succès.
+
+Face à l'échec relatif de génération de formes simples, nous avons voulu repensé notre manière d'écrire nos prompts soumis au modèle. 
+Nous avons principalement testé deux choses : 
+
+* La syntaxe de base : a tree vs trees vs tree
+* L'utilisation des mots introductifs 'a picture of' ; 'a photo of' ; 'a view of'
+
+En effet après l'examen de bribes de dataset d'entraînement, il ressortait que la plupart des descriptifs d'images présentait ce genre "d'introduction" au contenu objectif de l'image.
+Cela nous a aussi permis de voir que les paysages étaient très représentés en entraînement.
+Conceptuellement plus complexe que les formes simples testées ci-dessus, la présence des paysages dans le dataset allait en fait probablement nous aider à obtenir de meilleures générations.
+
+Encore une fois à vue d'oeil, la syntaxe semble avoir peu d'effet sur la génération, en revanche la mention de 'a picture of' améliore le résultat.
+Comme nous le pensions, mini DallE s'en sort très bien lorsqu'on lui demande de dessiner des paysages! Nous avons ensuite pu tester des tournures plus complexes autour des paysages (a mountain behind a garden), et dallE s'en sort toujours très bien, il parvient à placer correctement les éléments selon les intructions données (couleur, position, texture).
+
+Une fois cet examen fait, une analyse plus automatisée et pertinente est nécessaire.
 
 [**Résultats à mettre ici et à refaire ressortir visuellement - mettre des images**]
 
-* forme
-* texture
-* couleur
+
 
 #### 1.B.3 Évaluer les images avec CLIP
 
-A partir du descriptif et des images générées et de l'image d'origine, CLIP nous fournit un score pour chaque pair image-descriptif
+A partir du descriptif et des images générées et de l'image d'origine, CLIP nous fournit un score pour chaque pair image-descriptif!
+
+Clip peut fournir deux types de scores: 
+Un score absolu (par exemple 43.27) qui peut servir à comparer les images entre elles.
+Une probabilité : si on génère plusieurs images, on peut demander à CLIP de classer ces images de la plus pertinente à la moins pertinente et de fournir la "probabilité que ce soit cette image qui correspond au prompt soumis".
+
+En 1.B.1 et 1.B.2 C'est cette seconde méthode que nous avons utilisé pour regarder également à l'oeil nu, si les estimations de CLIP étaient conformes à l'avis humain.
+A date, CLIP et humain s'accordent dans la majorité des cas (joindre graphe arthur). Dès lors que l'image à générer devient plus conceptuelle (A sea made of red wine), CLIP et l'humain sont susceptibles de faire des choix différents, mais CLIP parvient presque systématiquement à "jeter" les images générées les moins satisfaisantes. 
+
+Pour débuter une analyse plus quantitative, nous avons utilisé le premier score fourni par CLIP. Nous avons pris le test dataset Flickr30K qui comporte un couple image + prompt, nous avons généré 5 images pour chaque prompt. Nous avons ensuite comparé les scores qu'attribue CLIP à la "gold image" tirée du dataset aux scores moyens des images générées par DallE. Le résultat peut se lire ci-dessous.
 
 
 [**Résultats à mettre ici et à refaire ressortir visuellement - mettre des images**]
