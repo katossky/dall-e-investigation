@@ -1,2 +1,4 @@
 .deepnote
 image_data/*
+.DS_Store
+models/*
