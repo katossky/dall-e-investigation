@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 
+
 %% Pour les appendices
 \usepackage[toc,page]{appendix}
 
@@ -29,12 +30,23 @@
 
 \usepackage{amsmath} % pour les symboles math
 \usepackage{amssymb}
+\usepackage{bbm} % for dummies
 
 \usepackage{mathtools} % for equation alginment with \mathrlap
+
+\usepackage{cancel} % for cancelation
 
 \usepackage[scr=boondoxo]{mathalfa} % pour mathscr
 
 \usepackage{comment} % pour masquer des passafe
+
+\usepackage{graphicx}
+\graphicspath{{img/}}
+\usepackage{float}
+\usepackage{subcaption}
+
+\newcommand{\bm}[1]{{\color{blue}\textbf{BM}: #1}}
+\newcommand{\mf}[1]{{\color{green}\textbf{MF}: #1}}
 
 \title{Statistical and emirical analysis of Text-to-image generation models}
 \author{L. Houairi,
@@ -48,6 +60,8 @@ C. Thiounn }
 \begin{titlepage}
 \maketitle
 
+%\bm{test}
+%\mf{test}
 Project conducted under the supervision of : Benjamin Muller and Matthieu Futeral-Peter 
 
 ENSAE's supervisor : Guillaume Lecué
@@ -108,6 +122,8 @@ ENSAE's supervisor : Guillaume Lecué
 \newcommand{\li}{l_{\mathrm{image}}}
 \newcommand{\di}{d_{\mathrm{image}}}
 \newcommand{\xn}{\mathbf{x}_n}
+\newcommand{\yn}{\mathbf{y}_n}
+\newcommand{\llat}{{l_{\mathrm{latent}}}}
 \newcommand{\dl}{{d_{\mathrm{latent}}}}
 \newcommand{\lt}{{l_{\mathrm{text}}}}
 \newcommand{\ct}{{c_{\mathrm{text}}}}
@@ -124,7 +140,7 @@ n & \text{: the number of examples to learn from} \\
 x \in \mathcal{X} & \text{: one image} \\
 \xn \in \mathcal{X}^n & \text{: the set of available images for training} \\
 s_\text{latent} & \text{: the side of an encoded (or compressed) image} \\
-l_\text{latent}\equiv s_\text{latent}^2 & \text{: the number of image tokens (or meta-pixels) in an encoded image} \\
+\llat\equiv s_\text{latent}^2 & \text{: the number of image tokens (or meta-pixels) in an encoded image} \\
 c_\text{latent} & \text{: the number of entries in the image encoding codebook} \\
 d_\text{latent} \equiv c_\text{latent} \times l_\text{latent} & \text{: the size of the encoded image space} \\
 \mathcal{Z}\equiv\{0,1\}^{d_\text{latent}} & \text{: the image encoding space} \\
@@ -145,29 +161,22 @@ $$
 \pagebreak
 \section{Abstract}
 \textit{Not in present in the examples of reports but this part seems crucial to me}
+We could possibly write a version of the abstract in french. 
 
 \pagebreak
 \section{Introduction}
 
-\begin{itemize}
-    \item Brief mention of the progress in ML
-    \item Speak a bit about NLP, image generation and seq2seq for generation in general
-    \item Why this topic / project is interesting
-    \item \textbf{Summary of DALLE's functioning}
-    \item Mention we are using different sources because everything is not available. Furthemore, articles and projects where released while we were working on the subject
-    \item Present the aims of our project, and especially that just understanding the model was non trivial
-    \item Plan announcement
-\end{itemize}
+As of today, machine learning is widely used for a large range of applications, and it is the subject of a lot of ongoing research. Natural Language Processing (NLP) is a branch of artificial intelligence that focuses on the comprehension and generation of the human language. A part of this field is studying how a computer can mimic human texts. Recent models such as GPT-3 were found to be very good for such tasks. Here, we are interested in another field in NLP: models working on the link between texts and images. More precisely, we studied a text-to-image model, that is a model capable of producing an image based on a text description (also called prompt). 
 
-\textcolor{red}{je ne sais pas trop si on doit parler de "ML" ou plutôt "d'IA" au début de l'intro}
-As of today, machine learning is widely use for a large range of applications, and it is the subject of a lot of ongoing research. NLP is a branch of Artificial Intelligence that focuses on the comprehension and generation of the human language. Recent models such as GPT-3 are very good for tasks such as producing the continuation of a text. More broadly, NLP is considered to be an interesting field for two different reasons: on one hand, a computer able to generate compelling human language or to properly generate images based on a text would, in a way, have a certain comprehension of the world; on another hand, we can imagine various applications for such model. \textcolor{red}{mettre 1 ou 2 exemples}.
+Such tasks is considered interesting for two different reasons. On the one hand, the ability to generate compelling human language, or quality images based on a prompt can be viewed as demonstrating a certain degree of comprehension on the world. On the other hand, we can imagine various applications for text-to-image models, for example dealing with or generating realistic pictures. 
 
-In this context, we worked on the DALL-E model. Put very simply, DALL-E is based on two fundamental bricks. A XXXX that can compress large images into a small representation made of image tokens, and a transformer that is able to generate such image tokens autoregressively, based on a tokenized prompt. 
+In this context, this document presents our work on the DALL-E model. DALL-E is based on two fundamental bricks. One part of the model is trained to compress large images into a small representation made of image tokens, and another is a transformer that is able to, if given a tokenized prompt, generate such image tokens autoregressively. To put it another way, given a text description, the transformer can generate image tokens. Then, the first brick of the model can recreate a full picture based on those image tokens. 
 
-A scientific article was published on the model DALL-E(\cite{zeroshot}). However, it is not fully public, only part of it has been made available and the article describing it is not always very clear. Therefore, in order to understand how this model works, we also relied on smaller public implementations of the same type of model: DALL-E mini \cite{wandbdallemini}, DALL-E Pytorch (\cite{dallepytorch}).
+A scientific article describing DALL-E was published (\cite{zeroshot}). However, the model is not fully public, only part of it has been made available and the article describing it is not always very clear. Therefore, in order to understand how this model works, we also relied on smaller public implementations of the same type of model: DALL-E mini \cite{wandbdallemini}, DALL-E Pytorch (\cite{dallepytorch}). DALL-E mini was the model used to generate images for our analysis. 
 
+During this project, we add three aims: i) understanding the complex architecture of the model, ii) running qualitative and quantitative analysis of the images the model can generate and iii) attempting to train a small DALL-E version of our own.
 
-
+In a first part, we introduce the theoretical background required to understand DALL-E. Then, we present how we generated images and the way we analysed then. In the modelling part, we describe our attempt to train a version of DALL-E.
 
 \pagebreak
 \section{Theoretical background}
@@ -190,21 +199,20 @@ Explanations about ML, DL ans transformers can be included in the appendices.
 
 \subsection{At inference time}
 
-\textcolor{red}{Il faut que je parle de l'intialisation en random state}
-Once a model like DALL-E is trained, it is then possible to generate images. This involves generating a sequence of tokens based on the tokenized prompt, using the trained transformer. This means that each step - for each image token that we want to generate - we need to chose a token in the conditional probability distribution (of possible image tokens). \hypertarget{options-generation}{This sampling can be done in various different ways}(\cite{howtogen}):
+Once a model like DALL-E is trained, it is possible to generate images. This involves generating a sequence of tokens based on the tokenized prompt, using the trained transformer. This means that each step - for each image token that we want to generate - we need to chose a token in the conditional probability distribution (of possible image tokens). \hypertarget{options-generation}{This sampling can be done in various different ways }(\cite{howtogen}):
 \begin{itemize}
     \item We can simply take the token with the highest probability, which is called \textbf{greedy decoding} (or greedy search)
-    \item A more elaborate version of the previous option is called \textbf{beamsearch}. This methods involves the voice of a value, the number of beams, that will be denoted l in the following explanation. At step 1, the model chooses the l tokens with the highest conditional probability. Then, for each of these tokens, the model look at the next l tokens with the highest probability. Based on all those combinations, the model drops all sequences but the l for which the probability of the sequence of tokens is highest (that is, the product of the conditional probability of token at step 1 and at step 2). So, at any time, the model bears in mind l possible sequences. This method allows not to miss high probability token "hidden" behind low probability token. It is always better than the previous one in terms of probability of the whole sequence. 
+    \item A more elaborate version of the previous option is called \textbf{beamsearch}. This methods involves the voice of a value, the number of beams, that will be denoted \textbf{L} in the following explanation. At step 1, the model chooses the \textbf{L} tokens with the highest conditional probability. Then, for each of these tokens, the model looks at the next \textbf{L} tokens with the highest probability. Based on all those combinations, the model drops all sequences but the \textbf{L} for which the probability of the sequence of tokens is highest (that is, the product of the conditional probability of token at step 1 and at step 2). So, at any time, the model bears in mind \textbf{L} possible sequences. This method allows not to miss high probability token "hidden" behind low probability token. It is always better than the previous one in terms of probability of the whole sequence. 
     \item Instead of choosing the highest probability token, we can also \textbf{sample} from the whole distribution. The two next methods are refinements of this sampling. 
-    \item It is also possible to restrict the probability distribution in which the sampling in done. In order to do so, \textbf{top-k sampling} restricts, at each step, the distribution of the possible tokens to the k tokens with the highest probability. The probabilities of the tokens that were filtered is redistributed on the tokens that were kept so that the total probability mass remains equal to one. 
-    \item A more adaptive version of restriction of the conditional distribution in which the sampling is done is the \textbf{top-p sampling} (or top-p nucleus sampling). At each step, we keep a certain number of possible tokens so that the probability of all the tokens kept is greater than or equal to the parameter top-p. Top-p and top-k sampling can be used simultaneously. We did not find clear mention of which of the two methods has the priority, but following (https://docs.cohere.ai/token-picking/) and the order at which things are done in the huggingface transformer code, it seems that top-p acts after top-k. 
+    \item It is possible to restrict the probability distribution in which the sampling in done. In order to do so, \textbf{top-k sampling} restricts, at each step, the distribution of the possible tokens to the k tokens with the highest probability. The probabilities of the tokens that were filtered is redistributed on the tokens that were kept so that the total probability mass remains equal to one. 
+    \item A more adaptive version of restriction of the conditional distribution in which the sampling is done is the \textbf{top-p sampling} (or top-p nucleus sampling). At each step, we keep a certain number of possible tokens so that the probability of all the tokens kept is greater than or equal to the parameter top-p. Top-p and top-k sampling can also be used simultaneously \footnote{Clear mentions of which of the two methods has the priority are scarce, but following \cite{congen} and the order at which things are done in the huggingface transformer code, it seems that top-p acts after top-k if both methods are used simultaneously.}.
 \end{itemize}
 
 \begin{table}[h!]
     \centering
     \begin{tabular}{|l|l|l|l|}
     \hline
-        ~ & Dall-E & Dall-E Mini & Our model \\ \hline
+        ~ & Dall-E & Dall-E Mini& Our model \\ \hline
         Autoencoder & dVAE & ~ & ~ \\ \hline
         Used data set & ~ & ~ & ~ \\ \hline
         Training set size & ~ & ~ & ~ \\ \hline
@@ -217,7 +225,7 @@ Once a model like DALL-E is trained, it is then possible to generate images. Thi
     \item Presentation of CLIP and its role
 \end{itemize}
 
-When working with image generation as we are, a central issue is the evaluation of the quality of the outputs. How can one decide whether a picture is coherent with a given prompt ? CLIP is one model that can be used for such task. It provides a number representing the quality of the fit between a prompt and an image and can thus be used as a quality measure of DALLE's ouputs \citet{learntransf, openaiclip}
+When working with image generation as we are, a central issue is the evaluation of the quality of the outputs. How can one decide whether a picture is coherent with a given prompt ? CLIP is one model that can be used for such task. It provides a number representing the quality of the fit between a prompt and an image and can thus be used as a quality measure of DALLE's outputs \citet{learntransf, openaiclip}. We spent some time evaluating if CLIP notation was similar to how humans would do it, as will be described in the Empirical approach part. See appendix \textbf{link to add} for more details on CLIP. 
 
 
 
@@ -247,14 +255,72 @@ Extraction of part of the images for the training of our model.
 
 \subsection{Introduction}
 
+The main objective of this empirical study is to better understand the models studied, in order to integrate these lessons into our own modeling attempts.
+
+\begin{itemize}
+    \item Mini dall-E differs from its big brother in architecture and capacity, we want to test these generation capabilities in both qualitative and quantitative ways. We want to be able to present the strengths of the model and give the parameters to use according to the desired generations
+    \item CLIP is an integral part of this process since it assigns a score to the images that can be used to draw conclusions. We want to better understand the scores assigned by comparing them to a human judgement and determine if we trust CLIP to judge Mini dall-E images.
+\end{itemize}
+
 \subsection{CLIP}
 
-\subsubsection{Nous VS CLIP (100 images de Flickr)}
-Notation par tout le monde des images (100 images) et on regarde ce que ca donne, voir midterm
-\textbf{Aymeric}
+
+
+\subsubsection{Human vs. CLIP comparison}
+
+CLIP is able to generate a matching score between a caption and an image in absolute value (this image is worth x points) or a probability score between a caption and several images, a relative score.
+CLIP is also able to work in reverse, proposing a probability score between an image and several captions: it gives the caption that matches the image the most according to it.(See figure ~\ref{fig:clip_proba_exemple}).
+
+\textit{Si CLIP scoring already explained:} As mentioned before, CLIP is able to evaluate images and captions in different ways.
+
+To test our confidence in CLIP, the following experiment was chosen to determine if CLIP and humans tend to make the same choice when presented with different captions: 
+\begin{itemize}
+  \item Selection of 100 random images from the COCO dataset
+  \item Writing of 3 descriptive captions: one caption from the dataset, the other two chosen by us (from very adequate to not at all).
+  \item Notation of the correspondence between the image and the sentences chosen by each human.
+  \item Comparison with the adequacy score established by CLIP.
+\end{itemize}
+
+The results can be found in figure \ref{fig:Humans vs CLIP}, they show that on most caption/image pairing, CLIP and humans agree on the score to give. All good captions for CLIP are considered good by humans. However, the limitation of the experiment is that some captions are so accurate that the probability score is very close to 1 for CLIP, causing other captions that are relatively good from a human perspective to score close to 0, that gives a messy column for this specific score.
 
 \subsubsection{CLIP sur le test set de flickr}
 Evaluation du modèle CLIP sur toute la base Flickr ? --> rapide analyse de moyenne faite par Aymeric à l'époque + coefficients de corrélation dont l'interprétation est parfois délicate (fait par Léo à l'époque). L'expérience 
+
+\textbf{Concernant les coefficients de corrélation}
+\textit{Probablement à modifier / adapter une fois que la partie au-dessus aura été écrite}
+
+Now that we were confident in the CLIP judgment (qualitatively), we decided to quantitatively test the quality of the images generated by mini DALL-E using the model scores. 
+
+Using the whole Flickr test set, for each prompt: 
+
+\begin{itemize}
+    \item We have the original image from the data set and CLIP's score between the two, this is the first list of scores.
+    \item We generated five different images for convenience, then we took the mean of CLIP's scores of the five images, we sampled randomly one of the five images generated, and kept its score, this is the second list of scores. For the computation of the correlation coefficients, we took the mean of the five scores instead of sampling one score random among the five. 
+\end{itemize}
+
+That worked pretty well, we obtained:
+\begin{itemize}
+    \item For the gold images: a mean score of 32.4 with a std of 3.4
+    \item For the generated images: a mean score of 23.3 with a std of 3.5
+\end{itemize}
+
+The value of these scores (in absolute value) does not represent anything, but shows the magnitude of CLIP's criticism of the generated images.
+
+Using that, CLIP behaves like a good classifier. If presented with a caption and two images (one real, one generated), CLIP can place each image in the correct group with an accuracy of 96.3%.
+
+Now is that a success of CLIP or a failure of mini DALL-E?
+
+In an attempt to characterise the quality of the images generated, we computed two correlation coefficients between the two list of CLIP scores.
+
+We computed Spearman's and Pearson's correlation coefficient between the two lists. Both yielded a small but significant correlation coefficient (at the 5\% level):
+\begin{itemize}
+    \item $\rho$ = 0.09, p-valeur = 0.39\% for Spearman
+    \item r = 0.113, p-valeur = 0.03\% for Pearson
+\end{itemize}
+Both correlations are close to 10\%. The idea was that if CLIP is working correctly and the image generation model is good as well, the images generated should be of a good quality, and thus their adequacy score with the prompt should be of the same order than those of the original image. Therefore, we expected higher correlation coefficients. 
+A possible conclusion is that two images can fit well to a prompt while having different CLIP scores, and thus that CLIP is not adapted for fine comparisons of images, and thus neither for fine comparisons of the image generating models. 
+
+
 \textbf{Léo et aymeric}
 
 \subsubsection{CLIP sur MS-COco (mystère)}
@@ -289,33 +355,63 @@ We experimented on two lines of research:
     \item Vary the values taken by the parameters top-p and top-k independently
 \end{itemize}
 
-The first experiment did not yield interesting results. For different prompts, the output was either totally black, totally white or very strange. However, we noted that the score of adequacy of a prompt with a white image as given by CLIP could reach 21 or 22. Thus, it seems that CLIP does not yield a value of 0 when we, as human, would consider appropriate. 
+The first experiment did not yield interesting results. For different prompts, the output was either totally black, totally white or very strange. However, we noted that the score of adequacy of a prompt with a white image as given by CLIP could reach 21 or 22. Thus, it seems that CLIP does not yield a value of 0 when we, as human, would consider appropriate. \textbf{Développer / ajouter des images}
 
 For the second experiment, we selected 3 images from the MS-COCO data set we used earlier, for which we had a prompt and a CLIP score linking the two. We also created manually a prompt for a landscape, as we knew the model we used was good at generating such images. The prompts we used were:
 \begin{itemize}
     \item "The man with pierced ears is wearing glasses and an orange hat."
     \item "A black and white dog is running in a grassy garden surrounded by a white fence."
     \item "A young female student performing a downward kick to break a board held by her Karate instructor."
-    \item "A sunset over snow-capped \underline{moutains}" (synthetic prompt)
+    \item "A sunset over snow-capped mountains" (synthetic prompt)
 \end{itemize}
-\textcolor{red}{erreur d'orthographe pendant la génération}
+We also added "A picture of" at the beginning of each prompt, for we knew it allowed to produce slightly better images. The scores of adequacy between the original picture and the new prompt (i.e. "A picture of the man ...") were recalculated, and were, interestingly, slightly different (as compared to the scores of the image with "The man ..."). 
 
 We tested the following values for the parameters: top-k = [5, 25, 100, 200] and to-p = [0.1, 0.3, 0.7, 0.9]. We also used the standard set of parameter (top-k = 50, top-p = 1.0). For each of the 9 set of parameters and for each prompt, we generated 5 images, then scored them against their prompt using CLIP.
 
 Then, we compared the scores visually and quantitatively using two statistical tests:
 \begin{itemize}
     \item For a given picture and a given set of parameters, a student was performed to check whether the sample average of the scores (of the 5 replicates) was different from the CLIP score of the original image with respect to the prompt. This last value is, in a way, our population mean here. 
-    \item For a given picture and a given set of parameters, a student test was performed to check whether the sample average of the scores (of the 5 replicates) was different from the mean of the scores for the same prompt but with the standard parameters (again, sample average over 5 replicates). 
+    \item For a given picture and a given set of parameters, a Welch test (student test not assuming eguality of variance) was performed to check whether the sample average of the scores (of the 5 replicates) was different from the mean of the scores for the same prompt but with the standard parameters (again, sample average over 5 replicates). 
 \end{itemize}
+
+\textbf{Il me reste à décrire les résultats}
+
 
 \begin{itemize}
     \item Colors
     \item Forms (if we've actually done it)
 \end{itemize}
 
-\subsubsection{Analyse quanti des images}
-Reconnaissance des couleurs, histogramme des couleurs
-\textbf{aymeric}
+\subsubsection{Color analysis}
+
+The purpose of this analysis is to focus on a specific aspect of the generation, the colors. 
+We wanted to create our own analysis tool to judge the quality of the generations of mini DALL-E, we planned to use this tool to compare mini DALL-E and the version of the model developed by us (see modeling).\\
+
+In introduction, we wanted to compare the colors produced by mini dall-E with the colors found in a dataset in order to check if the generation is biased. 
+
+Therefore, we used the images and generations from Flickr and plotted the color histograms for each group of images (see figure). We plotted the difference in histograms color by color (RGB) and performed a goodness-of-fit test to verify the conformity that we think we observe when reading the graphs, except for the pixels at the ends.
+
+Conclusion : waiting for the test.\\
+
+On the other hand we created a color recognition tool adapted to our needs to try to understand how good mini dallE was at drawing the colors requested in the captions. We looked at different situations to evaluate the performance of mini dall-E and then compared them to our own model.
+
+Using the K-means algorithm, we are able to recover the n main colors of each image (see figure \ref{fig:kmean}). We were then able to filter a folder of images to recover only those with the desired color. All this is possible thanks to the lab color space, which defines a metric between colors close to the perception of a human eye. When blue is requested, the images are converted to lab and a tolerance level can be chosen between the required color and the colors detected by the algorithm.\\
+
+With this tool available, we generated many images by requesting certain colors in particular ("a red mountain in the sun"). For each color we generated 25 images, which we then filtered to verify the presence of the requested color.\\
+
+The results are ambivalent, as they are very dependent on the requested color. For example, green is more easily present than blue, probably because of the differences in presence in the training data sets.
+
+On average we obtained the following scores, (we removed the green color who was an outlier given its presence in the dataset): 
+\begin{itemize}
+    \item Accuracy: 
+    \item Precision: 
+    \item Recall: 
+\end{itemize}
+
+Although with significant variability depending on the choice of color (in rgb coding), we conclude that mini dallE is able to understand the color instructions, but fails to be consistent. However, using this tool to filter multiple generations of the same caption is just a good way to improve the model generation.
+
+
+
 
 \pagebreak
 
@@ -353,7 +449,7 @@ For dVAE model, we opt for the VQGAN model trained by Boris Dayma and used in da
 Like dalle-mini, we start from Huggingface's implementation of BartModel, so we use the BartTokenizer to process captions. It can translate a caption into a sequence of text tokens with a vocabulary of 50265 text tokens. We pad the output sequence to 255 text tokens.
 
 \subsubsection{Data preprocessing}
-Prior to the training phase, we preprocess data so that a pair of caption-image are turned into a pair of sequence of text and image tokens. Since the operation is the same for each step of the training phase, we choose to preprocess it beforehand in order to speed up the training process subsequently.
+Prior to the training phase, we preprocess data so that a pair of caption-image are turned into a pair of sequence of text and image tokens. Since the operation is the same for each step of the training phase, we choose to preprocess it beforehand in order to speed up the training process subsequently. Since MSCOCO 2017 dataset's images have various sizes, we resize and center-crop\footnote{the center-cropping operation may induce loss of information regarding the caption if there are items at the border} the images to fit into a 256*256 image size.
 
 \subsubsection{Seq2Seq modelling}
 We begin from the last checkpoint of BartModel and we reset its decoder in order to adapt the output of the Seq2Seq/transformer. BartModel usually uses text tokens and outputs text tokens. Therefore, decoder part must be set-up to output image tokens rather than text tokens. To do so, we change the decoder configuration and the last part of language modelling head to match the size of the image vocabulary. Since modelling image tokens is a new task for BartModel, we also reset weights of all layers of the decoder.
@@ -365,7 +461,7 @@ Afterwards, both losses and backpropagation corrections are computed. In order t
 Deep learning metrics, such as mean loss on test dataset and mean loss on a small batch of train dataset are frequently sent to \href{https://wandb.ai/cthiounn/dalle-tiny}{WandB} in order to track different runs and to do a hyperparameters search.
 We perform a manual hyperparameters search on which learning rate we will use for the model and we find that the best learning rate is around 5*10**5 with AdamW.
 
-We use \href{https://datalab.sspcloud.fr/}{Onyxia datalab}'s resources to perform the training. The datalab offers fastAI instances with S3 storage and 1-3 GPUs per instance. Most of the runs are using at least 2 GPUs to speed up the training and to fit a larger batch size into the GPUs. Some attempts to perform an accumulated gradient strategy has been made, but has not been used in recent training runs.
+We use \href{https://datalab.sspcloud.fr/}{Onyxia datalab}'s resources to perform the training. The datalab offers fastAI instances with S3 storage and 1-3 GPUs per instance. Most of the runs are using at least 2 GPUs to speed up the training and to fit a larger batch size into the GPUs. Some attempts to perform an accumulated gradient strategy have been made, but this strategy has not been used in recent training runs.
 
 To avoid overfitting the train dataset, we stop the training when the mean loss on test dataset has reached its lowest point and save the model weights and configuration.
 
@@ -375,7 +471,7 @@ We load the adequate trained-model checkpoint and feed a caption into the text t
 
 \subsection{Tinydalle implementation on all MSCOCO 2017 dataset}
 
-Only the dataset selection has changed, the other parts remains unchanged. We keep our implementation but with bigger and more generic dataset.
+Only the dataset selection has changed, the other parts remain unchanged. We keep our implementation but with bigger and more generic dataset.
 
 \subsubsection{Dataset selection}
 
@@ -420,29 +516,76 @@ In this second experimentation, we use the entire MSCOCO 2017 dataset instead of
 \newcommand{\qp}{q_\phi}
 \newcommand{\esp}{\mathbb{E}}
 \newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\ltppxy}{\mathscr{l}_{\theta,\psi}(x,y)}
 \newcommand{\elb}{\underline{\mathscr{l}}}
-\newcommand{\elbtppx}{\underline{\mathscr{l}}_{\theta,\phi,\psi}(x)}
+\newcommand{\elbtppxy}{\underline{\mathscr{l}}_{\theta,\phi,\psi}(x,y)}
 
-\textbf{Dall-E} is a text-to-image model, first published by \citet{zeroshot}. The authors train \enquote{a transformer that autoregressively models the text and image tokens as a single stream of data} on a massive dataset of 250 millions image- caption pairs harvested from the Internet. The encoder-decoder part of the model (see after) has been released, but not the auto-regressive component. Here is our best attempt to introduce the reader to the model, beyond the very dense and concise exposition contained in the article, in which the authors are probably more focused on empirical results and numerical challenges than on presenting the theoretical foundations\footnote{Parts of the description is directly inspired by \cite{probml-advanced} }.
+\textbf{Dall-E} is a text-to-image model, first published by \citet{zeroshot}.
+The authors train \enquote{a transformer that autoregressively models the text and image tokens as a single stream of data} on a massive dataset of 250 millions image- caption pairs harvested from the Internet.
+The encoder-decoder part of the model (see after) has been released, but not the auto-regressive component.
+Here is our best attempt to introduce the reader to the model, beyond the very dense and concise exposition contained in the article, in which the authors are probably more focused on empirical results and numerical challenges than on presenting the theoretical foundations\footnote{
+Parts of the description is directly inspired by \cite{probml-advanced} and \cite{deepgen}.
+}.
 
 \subsection{Text-to-image models as machine-learning models}
 
-In the machine-learning field, text-to-image models are a subset of the very general class of \text{non-supervised} methods.
-Indeed, it is hard to picture what "supervision" would look like for text-to-image models.
-The simplest reason is that many different images correspond to the same textual description!
-This means that, given a caption, there is nothing like a correct (true) or a wrong (false) image, only a continuous of images more or less suited to the text.
-But that would not be a problem is there was some sort of agreed-upon distance measuring "how far" an image is from a given text.
-Alas, such an assessment is highly subjective and no indisputable quantitative measurement exists yet.
-As a consequence, on this specific task, there exists no loss function that could guide a supervised model in the correct direction\footnote{
-Of course one could argue that, for a given text prompt, a (group of) human assessor(s) might provide quantitative feedback about the model's suggested image outputs (placing each image on a scale from 0 to 1, where 0 denotes no relation to the text and 1 denote perfect adequacy).
-But even if we disregard the actual difficulty of such an assessment, the overall process would not suit our need for computing a loss on hundreds of examples at each of the hundreds of steps of the optimisation procedure !
-}.
+In the machine-learning field, text-to-image models are a subset of the very general class of \textbf{supervised} methods, that is, methods that try to find the "best" possible map between a input space $\mathcal{Y}$ (in our case: all possible texts) to an output space $\mathcal{X}$ (all possible images) using a given number of pairs $(y,x)\in\mathcal{Y}\times\mathcal{X}$ of examples\footnote{Choosing $y$ to represent an input and $x$ for an output is unfortunate, since the convention usually goes the other way around. However, we believe that it would bring more confusion to break the notation initiated by \citeauthor{zeroshot} in case one tries to read our report together with the original article.}.
+What "best" means usually boils down to the choice of (a) a parametric family of candidate predictors $\mathcal{F}=\{f_\theta:\mathcal{Y}\to\mathcal{X}|\theta \in \Theta \subseteq \mathbb{R}^F, F\in\mathbb{N}_\star\}$ and (b) a loss-function $\lambda:\mathcal{X}^2\to\mathbb{R}^+$ measuring the discrepancy between the prediction $\hat x = f_\theta(y)$ made from a given input $y$ and the corresponding input $x$ such that $\lambda(x,x)=0$ and $\forall (x',x)\in\mathcal{X}^2:\lambda(x',x)\geqslant 0$.
+With these definitions and writing $\lambda_i(\theta)=\lambda(x_i,f_\theta(y_i))$ to emphasise the dependency on $\theta$, \textit{training} a model means solving:
+\begin{equation} \label{eq:minloss}
+    \min_{\theta\in\Theta} \sum_{i=1}^{n} \lambda_i(\theta)
+\end{equation}
+In practice, we use the gradient of the expression with respect to $\theta$ to guide our search for the optimal $\theta^\star$ and the optimal predictor $f^\star=f_{\theta^\star}$.
+Unfortunately, defining such a loss-function $\lambda$ between images is far from straight-forward.
 
-In the class of non-supervised models, a text-to-image model is a \textbf{conditional generative model}, whose training consists in estimating an output distribution (here on images, noted each $x\in\mathcal{X}$) conditional on a given input (here a text, noted $y\in\mathcal{Y}$).
+Indeed, it is challenging to "supervise" a text-to-image model as it would entail that there exists a meaningful loss function that measures "how close" two images are from each other, and this independently of the caption itself!
+First, notice that the only unambiguous metric would be a binary function $\lambda(\hat x, x)=\mathbbm{1}(\hat x = x)$.
+However, any (infinitesimal) deviation from $x$ would be thus uninformative.
+In more concrete terms, such a distance says that two images are either the exactly the same, or completely different, even they differ only by a single pixel.
+That's madness : in a space as big as $\mathcal{X}$ (see after), it is virtually impossible to get a prediction $\hat x=f_\theta(y)$ that matches $x$ down to the pixel.
+Since this binary measure is not an option, we need a more "quantitative" approach.
+Unfortunately, there exists no agreed-upon quantitative distance between images, at least none that makes intuitive sense for a human\footnote{One may for instance define $\lambda$ as the euclidean distance over the values of pixels in the image. But this does not correspond to proximity between image in any conceivable sense for a human. For instance, an added random noise to the image would vastly augment $\lambda$ whereas a human would hardly see a change. Of course one could answer that the best evaluation would then be one performed by humans.
+That is, we could ask a (group of) human assessor(s) to provide quantitative feedback about the discrepancy in their opinion between two given images.
+But even if we disregard the actual difficulty of the task (can one consistently measure distance between pairs of images ? even when they do not represent anything concrete like pure random pixels ?) and potential lack of external validity of such an assessment (we necessarily have to chose \textit{some} humans which have their own biases on what two close images are), the overall process would not suit our need for computing a loss on hundreds of examples at each of the hundreds of steps of the optimisation procedure !}.
+And the very idea that the distance between two images can be defined independently of their common caption is questionable.
+It is on the contrary quite likely that for a more precise caption (say "an Indian child playing in a vast garden" vs. "a boy"), humans would scrutinise images longer until they find more evidence for difference.
+As a consequence, on this specific task, there does not seem to exist an obvious loss function $\lambda$ that could guide a supervised model in the correct direction.
+
+One way to circumvent the problem is to introduce some probabilistic context. In \textbf{probabilistic machine-learning}, we frame the problem more broadly. First, we do not force $\hat x$ the prediction to be deterministic as in $\hat x=f_\theta(y)$. Instead, we add some uncertainty and suppose that we can draw $x$ from some unknown probability distribution $p$, something that we write $\tilde x \sim p(\tilde x|f_\theta(y))$. In turn, we can specify a family of candidate parametric distributions $\mathcal{R}=\{p_\mu(\tilde x, \hat x)|\mu \in \mathbf{M}\subseteq \mathbb{R}^M, M\in\mathbb{N}\}$ modelling the uncertainty around the prediction. For instance, we could define a family $\mathcal{R}=\{p_\sigma:\sigma \in \mathbb{R}_+\}$ so that the uncertainty around a predicted image $\hat x$ be a normal distribution centred around each individual pixel value $\hat x_i$, i.e. $p_{\sigma}(\tilde x | \hat x)\sim 
+\mathcal{N}(\hat x, \sigma^2 \mathbf{I}_{\di})$. We add a tilde in $\tilde x$ to insist on the distributional nature of $\tilde x$ as opposed to the deterministic nature of $\hat x=f_\theta(y)$. More often than not, we write $p_{\mu,\theta}(x,y)\equiv p_\mu(x, f_\theta(y))$. Note that $\mathcal{P}=\{p_{\mu,\theta}:\mu \in\mathbf{M},\theta\in\Theta\}$ is also a family of probability distributions, although a more complex one than $\mathcal{R}$.
+
+So far we have extended the standard (deterministic) machine-learning framework of optimisation to the probabilistic component $p$, thanks to the introduction of $\mathcal{R}$. Now we can in principle search for a "best" parametric distribution $p^\star=p_{\mu^\star}$ through optimisation, but we are still missing a key ingredient : an objective function on which to optimise. Said otherwise, we still have no idea what a sound definition of the loss-function for text-to-image task should be. However, with out newly introduced distribution function we can use \textbf{maximum-likelihood} principles to ground our choice: the "best" parameter $\mu^\star$ is the one that makes the observed sample more likely.
+
+Let us explain. If for $\theta \in \Theta \subseteq \mathbb{R}^Q$, $q_\theta$ is an arbitrary parametric distribution for a variable $z$ and $\mathbf{z}_n=(z_1, ..., z_n)$ is the observed $n$-sample, the maximum-likelihood estimation tells us to solve the problem $\max_{\theta \in \Theta} q_\theta(\mathbf{z}_n)$, which under the assumption that $z_i$'s are independent from each other is equivalent to $\max_{\theta \in \Theta} \sum_{i=1}^n \ln q_\theta(z_i)$ (the logarithm being a strictly increasing function, it does not change the maximisation program).
+
+But in the supervised setting where $z_i=(x_i,y_i)$, we have two competing options to define exactly which distribution we want to maximise the likelihood counterpart of ! In a \textit{discriminative}, \textit{regression} or \textit{predictive model}, we would use the conditional distribution $p_{\mu}(x_i|f_\theta(y_i))\equiv p_{\mu,\theta}(x_i|y_i)$ whereas in a \textbf{generative model}, we maximise the joint distribution $p_\theta(x_i, f_\theta(y_i))\equiv p_{\mu,\theta}(x_i,y_i)$, without the conditioning. Note that $\forall i=1..n$: $$p_{\mu,\theta}(x_i, y_i)=p_{\mu,\theta}(x_i|y_i) \times p_{\mu,\theta}(y_i)$$ ... and thus that the objective only differ by this crucial $p_{\mu,\theta}(y_i)$ factor.
+
+Predictive models being usually reserved to low-dimensional outputs \citep{probml-advanced}we opt for discriminative modelling instead. Indeed, we face a situation where the output image space is high-dimensional (see next section). We will see later how at the end, because of suitable hypotheses (or restrictions, depending on the perspective) on the family $\mathcal{P}$, we can easily recover $p_{\mu,\theta}(x_i|y_i)$ from $p_{\mu,\theta}(x_i,y_i)$.
+
+To conclude this section, let us rejoice that, after a long detour, we finally succeeded into casting our \texbf{supervised} text-to-image problem as a \textbf{probabilistic generative model}. Given a distribution $p_{\mu,\theta}\in\mathcal{P}$, where $\mu$ controls the probabilistic distribution and $\theta$ controls the deterministic part, we can now define an objective on which we can use classical optimisation procedures to find (or "learn") the "best" distribution :
+$$\max_{\substack{\mu\in\mathbf{M}\\\theta \in \Theta}} \sum_{i=1}^n \ln p_{\mu,\theta}(x_i,y_i)$$
+
+We actually did not move that far away from the deterministic situation. Notice the similarity with \ref{eq:minloss} ! It suffices to define $\lambda_i(\mu,\theta)\equiv - \ln p_{\mu,\theta}(x_i,y_i)$ to cast our problem as a standard (non-deterministic) machine-learning algorithm:
+$$\min_{\substack{\mu\in\mathbf{M}\\\theta \in \Theta}} \sum_{i=1}^n \lambda_i(\mu,\theta)$$
+
+In the next section, we will justify the "high-dimensional" nature of $\mathcal{X}$ and $\mathcal{Y}$, then in the next, we will introduce latent variables. We will then \textcolor{red}{COMPLETE}.
+
+
+
+\textcolor{red}{I AM TRYING TO INTRODUCE THE IDEA THAT DALL-E IS A \textbf{GENERATIVE MODEL} IN THE SENSE THAT IT MAXIMISES THE LIKELIHOOD $p(x,y)$ (INSTEAD OF THE CONDITIONAL $p(x|y)$ WHICH WOULD BE A DISCRIMINATIVE MODEL, WHICH WOULD BE MORE EXPECTED FOR A SUPERVISED PROBLEM). WE CAST THE PROBLEM BACK TO $p(x|y)$ ONLY AT THE END.}
+
+% debate :
+% https://stats.stackexchange.com/questions/408421/is-the-only-difference-between-conditional-generative-models-and-discriminative
+% https://stackoverflow.com/questions/879432/what-is-the-difference-between-a-generative-and-a-discriminative-algorithm
+
+\textcolor{blue}{
+[IN PROGRESS]
+But in the class of non-supervised models, a text-to-image model is the closest that one can get to a supervised model, namely a \textbf{conditional generative model}, whose principle consists in estimating an output distribution (on the image space $\mathcal{X}$) conditional on a given input (a text $y\in\mathcal{Y}$).
 Generating new images is akin to drawing samples from the estimated (conditional) distribution.
-The challenge however is precisely how to estimate this distribution, given that the input- as well as the output-space are highly-dimensional !
-
-The solution proposed by \citet{zeroshot} is to constrain the generation of $x \sim p(x\mid y)$ to go through an intermediary step of a (discrete) latent variable $z \in \{0,1\}^{d_\text{latent}}$, that is, to first simulate $z \sim p(z \mid y)$ and then to simulate $x \sim p(x \mid z)$.
+The challenge however is precisely how to estimate this distribution, given that the input- as well as the output-spaces are highly-dimensional !
+, and we prefer to frame the problem as \textbf{non-supervised}, that is a problem where our goal is rather to find a low-dimensional structure into a high-dimensional space, in our case the product space $\mathcal{Y} \times \mathcal{X}$ of the caption-image pair
+\textbf{variational inference}\footnote{Variational inference is typically opposed to sampling-based methods such as Markov-Chain Monte-Carlo (or MCMC). Strictly speaking, variational inference also encompasses non-parametric models (distribution families described by an infinite number of parameters).}.
+}
 
 \subsection{Structure of the text-image space}
 
@@ -465,7 +608,7 @@ Alternatively, writing $\dt = \lt \times \ct$, we can envision this discrete spa
 This depiction will come in useful when we will want to discuss a probability distribution over the code for each token, in which case we will relax the $\{0,1\}$ restriction and authorise any value inside $[0,1]$ and interpret these values as probabilities.
 
 A particularly efficient encoding strategy is when the vocabulary (or codebook, we will use the two interchangeably from now on) is designed so that frequent sequences of characters occupy only one entry, insuring the most compact encoding as possible of the text into integers.
-In Dall-E specifically, they use $\ct=16,384$ with an encoding scheme known as \textbf{byte-pair-encoding} (BPE). The strategy is described by \citep{bperef}:
+In Dall-E specifically, they use $\ct=16,384$ with an encoding scheme known as \textbf{byte-pair-encoding} (BPE). The strategy is described by \citet{subword-units}:
 
 \blockquote{
 BPE is a simple data compression technique that iteratively replaces the most frequent pair of bytes in a sequence with a single, unused byte.
@@ -499,39 +642,99 @@ Dall-E considers only square images of side length $\si=256$ pixels.
 Square images of side exceeding $\si$ are down-scaled whereas non-square images get cropped\footnote{
 Cropping the images may have for adverse consequence that some of the image context is lost. It is implicitly assumed that the content of the image remains unchanged after cropping.
 }.
-Given that each of these $\li=\si^2$ colour pixels is described by three real numbers\footnote{
-The most used colours-space, RGB-space, maps each colour to the amount of pure red, green and blue light needed for a screen to produce this colour. Traditionally, the values for each of the colour components range from 0 10 $255$, but this is only a consequence of the storage convention that a colour should occupy 3 bytes (and 1 byte gives $2^8=256$ integer levels). But on purely abstract grounds, each component continuously covers $[0,255]$, and nothing prevents us from remapping this range to $\mathbb{R}$.
+Given that each of these $\li=\si^2$ colour pixels is described by three real numbers corresponding to the red, green and blue channels\footnote{
+The most used colours-space, RGB-space, maps each colour to the amount of pure red, green and blue light needed for a screen to produce this colour. Traditionally, the values for each of the colour components range from 0 to $255$, but this is only a consequence of the storage convention that a colour should occupy 3 bytes (and 1 byte gives $2^8=256$ integer levels). But on purely abstract grounds, each component continuously covers $[0,255]$, and nothing prevents us from remapping this range to $\mathbb{R}$.
+That said, the integer-nature of the colour channels will cause some computational issues that we treat \textcolor{red}{IN SECTION + REFERENCE}.
 }, an image $x$ can be considered to belong to $\mathcal{X}\equiv \mathbb{R}^{\di}$ with $\di=3\li^2$.
 
 \subsection{Derivation of the model, estimation of parameters and generation of images in a nutshell}
 
-Recall that our final goal is to estimate $p_{x|y}$, so that we can draw a random image $x$ from a given caption $y$. We first outline the main steps of the resolution and the main hypotheses, then briefly explain estimation and generation, before delving into the details in the next sections.
+Recall that our final goal is to estimate $p(x|y)$, so that we can draw a random image $x$ from a given caption $y$. We first outline the main steps of the resolution and the main hypotheses, then briefly explain estimation and generation, before delving into the details in the next sections.
 
 \subsubsection{Model derivation}
 
+The model derivation consists into framing a manageable maximisation problem, where manageable here means that both the objective function and its derivative can be computed exactly or estimated accurately.
+
 \begin{enumerate}
-    \item Because of the curse of dimensionality prevents us from estimating $p(x,y)$ directly, we introduce a \textbf{latent variable} $z$, of dimension $\dl \ll \di$. We have $p(x,z)=p(x|z)p(z)$ and we can chose arbitrary distributions for $z$. Our choice will be based on tractability (can be computed), flexibility (can approach any true underlying distribution when estimated) and other properties such as having a meaningful Euclidean distance (the latent space or embedding conveys some meaning) or being discrete (is homogeneous with text data).
-    \item But $p(x|z)$ is still impossible to estimate directly because of the dimensionality of $\mathcal{X}$ ! Instead, we use \textbf{amortised stochastic variational inference}, where we instead approach $p(z|x)$ by an arbitrary family of distribution $q_\phi(z|x)$ from a family $\mathcal{Q}\equiv\{q_\phi : \phi\in\Phi\subseteq \mathbb{R}^{k_{\mathrm{encode}}}\}$. We lose our ability to maximise the likelihood directly but on the other hand we obtain a (quite tight) lower bound $\elbtppx$ that we can maximise instead.
-    \item After quite a number of computational tricks giving requirements on the $z$ distribution, we can show that derivatives of $\elbtppx$ with respect to all parameters of model can be estimated with Monte-Carlo simulation. We are now ready for stochastic gradient descent !
-    \item We are down to explicitly choosing forms for $q()\simeq $ (the encoder) and  $p() \simeq $ (the decoder) and  $\simeq $ (an auto-regressive transformer).
+    \item Because the curse of dimensionality prevents us from estimating $p(x,y)$ directly, we introduce a \textbf{latent variable} $z$, of dimension $\dl \ll \di$, that nevertheless captures the underlying features of the images. This allows us to use Bayes' theorem twice to re-write: $$p(x,y)=\frac{p(x,y,z)}{p(z|x,y)}=\frac{p(x|y,z)p(y,z)}{p(z|x,y)}$$
+    ... where each of the three components is estimable ! By analogy with Bayesian statistics, the authors call $p(x,y)$ the \textbf{evidence} and $p(y,z)$ the \textbf{prior}\footnote{This vocabulary comes from the unconditional case where $p(x)=\frac{p(x|z)p(z)}{p(z|x)}$ and where $p(z)$ is here correctly labelled as the "prior" over the arbitrary distribution of the unobserved $z$. However, in our case, it does not make much sense to talk about a "prior" over $y$ since we can not "believe" anything about what we actually see for caption. Moreover, the "prior" is going to be estimated. In our opinion, the "prior" label brings more confusion that it actually helps.}
+    \item The nice thing here is that this stays true irrespective of the distribution of $z$. We can thus chose the one we like best! Our choice will be based on tractability (can be computed), flexibility (can approach any true underlying distribution when estimated) and other properties such as having a meaningful Euclidean distance (which means that closeness in the $z$ space translates to some sense of proximity for humans in the image space) or being discrete (is homogeneous with text data).
+    \item Let $\mathcal{F}^\star\equiv\{f_{\theta,x,y}|\theta\in\Theta\subseteq\mathbb{R}^{F}, x\in\mathcal{X}, y\in\mathcal{Y}\}$ be the family of parametric distributions approaching $p(x|y,z)$. We can deliberately restrain to families $\mathcal{F}\equiv\{f_{\theta,x}|\theta\in\Theta\subseteq\mathbb{R}^{F}, x\in\mathcal{X}\}\subset \mathcal{F}^\star$ ignoring the dependency on $y$ and write :
+    $$f_{\theta,z}(x) \simeq p(x |y,z)$$
+    ... in order to interpret $f_{\theta,z}(x)$ as a the distribution of the images $x$ given latent image features $z$, or in other words as a \textbf{stochastic image decoder} that ignores the information contained in the caption $y$.
+    
+    \item Conversely, we call $\mathcal{G}\equiv\{g_{\psi}|\psi\in\Psi\subseteq\mathbb{R}^{G}\}$ the parametric family of distributions approaching $p(y,z)$, the joint distribution of text and latent image features, and write:
+    $$g_{\psi}(y,z)\simeq p(y,z)$$ By replacing the image $x$ with its encoding $z$, we greatly simplified the modelling problem in comparison with the direct estimation of $p(x,y)$ as (a) $y$ and $z$ are now both discrete and (b) the dimensionality of $z$ is vastly smaller than that of $x$ ($\dl\ll\di$).
+    \item At this point note that we have an estimand of the whole distribution $p$ since $p_{\theta,\psi}(x,y,z)\equiv f_{\theta,z}(x)g_{\psi}(y,z)\simeq p(x|y,z)p(y,z)=p(x,y,z)$! Therefore, an approximation for $p(z|x,y)$ is "known" and could in theory be made explicit.
+    \item But we can also bypass this step and just estimate it with yet a new parametric distribution $\mathcal{H}^\star\equiv \{h_{\phi,x,y}|\phi\in\Phi\subseteq\mathbb{R}^{H},z\in\mathcal{X},y\in\mathcal{Y}\}$, a practice known as \textbf{variational inference}. Assuming here also independence from $y$ for simplicity, we write:
+    $$h_{\phi,x}(z)\simeq p(z|x,y)$$
+    and interpret $h_{\phi,x}\in\mathcal{H}\equiv \{h_{\phi,x}|\phi\in\Phi\subseteq\mathbb{R}^{H},z\in\mathcal{X}\}\subset\mathcal{H}^\star$, the probability of the image tokens $z$ given the real image $x$, as a \textbf{stochastic image encoder}.
+    \item In this context, noting $\mathscr{l}_{x,y}(\theta,\psi) \equiv \ln p_{\theta,\psi}(x,y)$ the log-likelihood, we will show that $\forall \phi \in \Phi$:
+    \begin{align*}
+    \mathscr{l}_{x,y}(\theta,\psi) \geqslant \underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi) &\equiv \mathbb{E}_z \Big[\ln f_{\theta,z}(x)\Big] - \KL \Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big) \\ & =\mathbb{E}_z \Big[\ln f_{\theta,z}(x)+\ln g_\psi(y,z) -\ln h_{\phi,x}(z)\Big]
+    \end{align*}
+    Said differently, there exists a lower-bound on the likelihood known as the \textbf{evidence lower-bound} or \textbf{ELBO}, and the closest $h_{\phi,x}(z)$ is from its derived counterpart, the tighter the bound.
+    \item After quite a number of computational tricks giving requirements on the $z$ distribution, we can show that the derivatives of $\elbtppxy$ with respect to every parameter can be estimated with \textbf{Monte-Carlo simulation}. (In practice, we never write explicitly the ELBO-derivatives and apply \textbf{automatic differentiation} instead.) We are now ready for \textbf{stochastic gradient ascent} maximising $\elbtppxy$ instead of $\ltppxy$.
+    \item The last step of the derivation is to explicitly choose well-behaved families for the encoder $f_{\theta,z}(x)\simeq  p(x |y,z)\overset{\text{hyp.}}{=}p(x|z)$, the decoder $h_{\phi,x}(z) \simeq  p(z |x,y)\overset{\text{hyp.}}{=}p(z|x)$ and the simplified model $g_\psi(y,z)\simeq p(y,z)$.
+    
+    In particular, if the choice of $f_{\theta,z}$ and $h_{\phi,x}$ is relatively free, that of $g_\psi(y,z)$ is \textit{not}. We do make the requirement that $g_\psi(y,z)$ is \textbf{auto-regressive}, drawing inspiration from the decomposition: \begin{equation*} \begin{split}
+    p(y,z) = p(y_1) \times p(y_2|y_1) \times p(y_2|y_1,y_2) \times ... \times p(y_{\lt}|y_1,y_2, ..., y_{\lt-1}) \\ \times p(z_1|y) \times p(z_2|y,z_1) \times p(z_3|y,z_1,z_2) \times ... \times p(z_{\llat}|y,z_1,z_2,...,z_{\llat-1}) \\ = p(y)p(z|y) \end{split} \end{equation*}
+    Said otherwise, we opt for a simplified version where we model the \textit{probability of transition} from $y_1$ to $y_2$, then to $(y1,y_2)$ to $y_3$ and so forth. This has the considerable advantage that our end-goal to model the generative distribution $p(z|y)=p(y) \times p(z_1|y) \times ... \times p(z_{\llat}|y,z_1,z_2,...,z_{\llat-1})$ comes for free !
+    
+    But on the other hand, the explicit fully auto-regressive expression is not tractable in practice because the dependency of the current state on the past states is both non constant (increasing) over time and of considerable size at the last stages ($\lt + \llat$, where each token can take one of thousands of values!). Noting $a=(y \quad z)$ the concatenation of $y$ and $z$, the trick is to summarise "the past" into a fixed- and small-dimensional latent $\eta_i$ variable and estimate a simplified transition $\gamma_{\psi,\eta_{i-1}}$ over the pair $(a_i,\eta_i)$. We set:
+    \begin{equation*}\begin{split}
+    \gamma_{\psi,\eta_{i-1}}(a_i,\eta_{i})\simeq p(a_i,\eta_i|\eta_{i-1})
+    \end{split}\end{equation*}
+    ... and we get:
+    \begin{equation*}\begin{split}
+    p(a_i|a_{i-1}, ..., a_1)=\textcolor{red}{\text{PLEASE MAKE } \eta \text{ MAGICALLY APPEAR}}\\=p(a_i|\eta_{i-1})\simeq \textcolor{red}{\text{AND HERE }\gamma}
+    \end{split}\end{equation*}
+    ... thanks to the hypothesis $p(a_i|\eta_{i-1},a_{i-1},...,a_1)=p(a_i|\eta_{i-1})$ that $\eta_i$ that completely captures history. This means that, as long as the latter hypothesis holds, our trick does not prevent us from correctly predicting the next token $a_i$ from the past tokens. At the end, if we need, we can recover the full estimated distribution:
+    \begin{equation*}\begin{split}
+    g_\psi(y,z)=\gamma_{\psi,\eta_0}(y_1,\eta_1)\gamma_{\psi,\eta_1}(y_2,\eta_2)...\\ \simeq \textcolor{red}{\text{COMPLETE}}=p(y,z)
+    \end{split}\end{equation*}
+    ... and the conditional distribution:
+    \begin{equation*}\begin{split}
+    ...\\ \simeq p(z|y)
+    \end{split}\end{equation*}
+    
 \end{enumerate}
 
 \subsubsection{Parameter estimation}
 
-At the end, the estimation (optimisation) procedure looks like the following. First, initialise the distribution of $z$ as discrete-uniform, draw random parameters $\phi$s,  $\psi$s and $\theta$. Note: statisticians have a tendency to use the word "parameters" whereas machine-learners tend to use "weights", especially in the case of neural networks.
+At the end, the estimation (optimisation) procedure performed by \cite{zeroshot} looks like the following:
 
 \newcommand{\zn}{\mathbf{z}_n}
 
 \begin{enumerate}
-    \item 
-    \item Take a batch $\xn$ of $n$ images.
-    \item From each image $x_i$, use the encoder $e_\phi$ to obtain the parameters $\lambda_i=e_\phi(x_i)$ of the $z_i|x_i$ distributions ($q_{\lambda_i}$)
-    \item Generate $n$ independent draws from a Gumbel law \textcolor{red}{[Check!]}, noted $\boldsymbol{\varepsilon}_n$, and from it the compute $\zn= \textrm{FORMULA}$ \textcolor{red}{[Complete!]} – we are ensured that $z_i\sim q_{\lambda_i}(z_i)$.
-    \item Use the decoder $d_\theta$ to reconstruct the image from the code $\hat{x}_i = d_{\theta}(z_i)$
-    \item ????
-    \item Calculate the $\elb$ derivative on this batch
-    \item Update the meta-parameters (learning rate, )
-    \item Repeat with the next batch
+    \item Initialise the distribution of $z$ as discrete-uniform, draw random parameters $\theta_0$,  $\phi_0$ and $\psi_0$. Define a held-out sample $(\bar{\mathbf{x}},\bar{\mathbf{y}})$ used for testing and initialise meta-parameters learning rate $r_0$, temperature $\tau_0$, absolute precision $\delta$ and patience $\Delta t$.
+    \item \textbf{(Stage 1)} For each step $t>0$, update $\theta_t$ and $\phi_t$ as following. (The process does not use the captions $\mathbf{y}$ thanks to our independence assumptions.) Stop when $\underline{\mathscr{l}}_{\bar{\mathbf{x}}}(\theta_t,\phi_t)$, the objective function computed on the held-out sample, does not increase more than $\delta$ after $\Delta t$ steps. Let's note $t_1$ this maximal number of steps.
+    \begin{enumerate}
+    \item Take a random\footnote{In practice, no machine-learning algorithm uses true random batches, as the stochastic optimisation would require, but rather randomly sorts all statistical units, runs through the stack in order, then reshuffles when it reaches the bottom and starts back from the start.} batch $\xn$ of $n$ images\footnote{Since we are dealing with images, it is in practice almost impossible to have $n$ images loaded simultaneously into memory. Most implementation thus proceed with mini-batches of size $n^\prime<n$, and accumulate temporary results until the full batch has been processed. Indeed it is a bad idea to use a low $n$, since stochastic gradient descent rests on the idea of law of large number for the gradient estimation.}
+    \item For each image, generate $k_1$ independent draws from the distribution $z_i|x_i\sim h_{\phi,x}$. You obtain $k_1n$ compressed images $z_{ij}$.
+    \item For each compressed image, generate $k_2$ independent draws from the distribution $x_j|z_j\sim f_{\theta,z_j}$. You obtain $k_1k_2n$ reconstructed images $\hat x_{ijk}$.
+    \item Use automatic differentiation to compute the derivative of the lower bound: \begin{align*}
+    \underline{\mathscr{l}}_{x_i}(\theta_{t},\phi_{t}) & \equiv \mathbb{E}_{z_i|x_i} \Big[\ln f_{\theta_t,z_i}(x_i) -\ln h_{\phi_t,x_i}(z_i)\Big] \\ & \simeq \frac{1}{k_1k_2}\sum_{j=1}^{k_1}\sum_{k=1}^{k_2} f_{ \theta_t,z_{ij}}( \hat{x}_{ijk} )-\frac{1}{k_1}\sum_{j=1}^{k_1} h_{\phi_t,x_i}(z_{ij})
+    \end{align*}
+    We can safely ignore the other components of the ELBO since they are constant with respect to $\theta$ and $\phi$.
+    \item Move parameters according to the estimated gradient. For the sake of simplicity, let's just consider the following trivial update: $$(\theta_{t+1},\phi_{t+1})=(\theta_{t},\phi_{t})+r_t\hat{\nabla}\underline{\mathscr{l}}_{\mathbf{x}_n}(\theta_{t},\phi_{t})$$
+    (The real updating scheme used by \citeauthor{zeroshot}, known as AdamW, is more complicated.)
+    \item Update learning rate $r_t$ and temperature $\tau_t$ according to some planned out scheme.
+    \end{enumerate}
+    
+    \item \textbf{(Stage 2)} Set $\psi_{t_1}=\psi_0$, $r_{t_1}=r_0$. For each step $t>t_{1}$, update $\psi_t$ as following. Stop when $\underline{\mathscr{l}}_{\bar{\mathbf{x}},\bar{\mathbf{y}}}(\psi_t)$, the objective function computed on the held-out sample, does not increase more than $\delta$ after $\Delta t$ steps.  Let's note $t_2$ this maximal number of steps.
+    
+    \begin{enumerate}
+    \item Take a random batch $(\xn,\yn)$ of $n$ image-caption pairs
+    \item For each image, generate $k_1$ independent draws from the distribution $z_i\sim h_{\phi_{t_1},x_i}$. You obtain $k_1n$ compressed images $z_{ij}$.
+    \item Use automatic differentiation to compute the derivative of the lower bound: \begin{align*}
+    \underline{\mathscr{l}}_{x_i,y_i}(\psi_t) & \equiv \mathbb{E}_{z_i|x_i} \Big[\ln g_{\psi_t}(y,z)\Big]
+    \end{align*}
+    We can safely ignore the other components of ELBO which are constant with respect to $\psi$.
+    \item Move parameters according to the estimated gradient, which for the sake of simplicity we present as: $$\psi_{t+1}=\psi_{t}+r_t\hat{\nabla}\underline{\mathscr{l}}_{\xn,\yn}(\theta_{t},\phi_{t})$$
+    \item Update the learning rate $r_t$.
+    \end{enumerate}
+    \item The estimation is finished. Set $(\hat \theta, \hat \psi, \hat \phi)=(\theta_{t_1}, \psi_{t_2}, \phi_{t_1})$
 \end{enumerate}
 
 \subsubsection{Image generation}
@@ -544,6 +747,148 @@ After convergence, we can use the model to generate new images from text:
     \item
 \end{enumerate}
 
+\subsection{Latent variables}
+
+In this section, we provide substance to the first step of the derivation of a tractable objective function, taking roots in our overall goal of estimating the conditional distribution $p(x|y)$. We start with the joint distribution\footnote{We abusively call distribution the density function with respect to the correct mix of Lebesgue and discrete measures. Indeed, recall that $x$ is continuous, whereas $y$ and $z$ are discrete variables. We also abuse notation, not distinguishing the random vectors from their realisations, as is common in Bayesian or machine-learning literature.}: $$p(x,y)$$
+Note that, abstracting from computational issue, we \textit{could} in theory retrieve the conditional distribution: $$p(x|y)=\frac{p(x,y)}{p(y)}=\frac{p(x,y)}{\int_x p(x,y)dx} $$
+Unfortunately both estimating $p(x,y)$ or computing $\int_x p(x,y)dx$ is impossible due to the \textbf{curse of dimensionality}.
+
+The \textbf{curse of dimensionality} is the idea that in high dimensions, the Euclidean space becomes sparser and sparser : observation become further apart from each other and more homogeneously distributed, which makes the very concept of distance meaningless. Alas, distribution estimation relies heavily of the notion of distance. Schematically, if $d$ is the space dimension, reducing uncertainty by a factor $k$ around a distribution $p$ requires an increase of the data set size by a factor of $k^d$. Such a collection is prohibitive for large $d$s !
+
+In our case, the curse hits in two ways. The first blow comes when we want to estimate $p(x,y)$, since $x$ and $y$ both live in a high-dimensional space. The second blow comes when we want to estimate the integral along $x$. (Recall that even for small square images of size $\si$, the actual image space is of size $\di=3\si^2$.)
+
+One solution, retained by \citet{zeroshot}, is to introduce an arbitrary low-dimensional \textbf{latent variable} $z$ to alleviate the curse. By definition of a conditional distribution, we have:
+$$p(x,y,z)=p(x,y | z) p(z)$$
+How does it help? First note that this equation stays true irrespective of the exact distribution $p(z)$. This means that we can chose the distribution to suit our needs. In particular, we may chose any independence assumption between $x$ and $(x,y)$ that leads to tractable computations! Then note that if we chose $z$ so that its dimension be orders of magnitude smaller than $x$'s ($\dl\ll\di$), integrating along $z$ is in principle much easier than integrating over $x$. Thus, it is in theory easier to compute $p(x,y)$ from $p(x,y | z)$ than computing $p(x|y$ from $p(x,y)$. Specifically:
+$$p(x,y)=\int_z p(x,y | z) p(z) dz$$
+Finally, note that any expression that can be expressed as $\int_z f(z) p(z) dz=\mathbb{E}_z f(z)$ can be estimated through Monte-Carlo simulation by simulating $n_\text{sim}$ draws from the $z$ distribution, something that will turn out handy for estimating the gradient of the objective function in section \textcolor{red}{SECTION}. Indeed since any distribution can be chosen, we might as well chose one that is convenient to simulate ! Writing $z_i$ the $i$th draw from $p(z)$, we indeed have:
+$$\int_z f(z) p(z) dz=\mathbb{E}_z f(z)\simeq \frac{1}{n_\text{sim}}\sum_{i=1}^{n_\text{sim}} f(z_i)$$
+
+But unfortunately, as long as $z$ itself is not trivially low-dimensional, correctly approaching the integral requires a large number of draws from the distribution to cover the whole space spanned by $z$ ! And even though we require $\dl\ll\di$,  we nevertheless still want to retain some features of the original images, and thus the compressed image $z$ must remain relatively high-dimensional.
+
+To sum up, in our case, the straight-forward use of a latent variable $z$ would lead to the factorisation of $p(x,y)$ as: $$\int p(x,y|z)p(z)dz$$ ... which is still intractable for at least two reasons, both linked to the curse of dimensionality: the difficulty of estimating $p(x,y|z)$ and the difficulty of integrating over $z$. Only the first difficulty can be solved, and we have two solutions:
+
+\begin{enumerate}
+    \item firstly factorise the distribution further, leading to more manageable bits that will be easier to estimate ; making independence assumptions on $p(z)$ will further reduce the space to explore
+    \item secondly specify parametric distribution families in which to find our best candidates for estimation, instead of bluntly performing flexible but unmanageable non-parametric estimations densities (this is actually a really common restriction, but always worth emphasising)
+\end{enumerate}
+
+For reasons that will become clear later, we chose the following factorisation: $$p(x,y)=\frac{p(x,y,z)}{p(z|x,y)}=\frac{p(x|y,z)p(y,z)}{p(z|x,y)}\overset{\text{hyp.}}{=}\frac{p(x|z)p(y,z)}{p(z|x)}=\frac{p(x|z)}{p(z|x)}p(y,z)$$
+
+... in which we suppose $x|z \perp\!\!\!\perp y$ and $z|x \perp\!\!\!\perp y$\footnote{These are acceptable hypotheses on the distribution of $z$, that do not impose any restriction on the distribution of $(x,y)$. \textcolor{red}{SHOW!}}.
+Stated in plain English, these two assumptions embed the natural idea that the distribution of a compressed image $z$ encoding a given image $x$ does \textit{not} depend on the corresponding caption $y$ and conversely that once we know a code $z$, the distribution of the uncompressed image $x$ does not depend on $y$ either.
+This correctly captures the idea that $x$ and $z$ actually represent the same image, and that the passage back and forth between the two representations should be independent of the image's actual caption $y$.
+
+The nice thing about the suggested decomposition :
+$$p(x,y)=\frac{p(x|z)}{p(z|x)}p(y,z)$$
+... is that it can be readily interpreted :
+\begin{enumerate}
+    \item $p(y,z)$ is the joint distribution of text and (compressed) image tokens, the substantial meat of the model
+    \item $p(x|z)$ is the distribution of the images, given a code (i.e. a probabilistic \textbf{image decoder})
+    \item $p(z|x)$ is the distribution of the codes, given an image (i.e. a probabilistic \textbf{image encoder})
+\end{enumerate}
+
+We delay the choice of parametric families of distribution functions to sections \textcolor{red}{SECTION} and \textcolor{red}{SECTION}, but in the meanwhile, note that we improved the modelling from the hard problem of estimating $p(x,y)$ to the (slightly simpler) problem of estimating $p(y,z)$ on one hand and $p(z|x)$ and $p(x|z)$ on the other hand. In particular, $p(y,z)$ is simpler to work with for two mains reasons: we can chose a discrete distribution for $z$ so that $y$ and $z$ be homogeneous ; $z$ has lower dimensionality than $x$.
+
+\subsection{Maximum likelihood setting for parametric inference}
+
+In the preceding section, we explained how the introduction of a discrete latent variable $z$ whose distribution we chose to verify:
+\begin{equation} \label{pdecompose}
+p(x,y)=\frac{p(x|z)}{p(z|x)}p(y,z)
+\end{equation}
+... simplifies the estimation problem. We also saw that it was vain to try direct non-parametric estimation of any of these distributions because of the curse of dimensionality. Now suppose on the contrary we have some parametric family of candidate distributions $\mathcal{P}=\{p_\beta(x,y,z): \beta \in B\subseteq \mathbb{R}^b\}$, in which we aim to find the one that best approaches the true underlying data generating process:
+$$p_\beta(x,y)\simeq p(x,y)$$
+(Here $p_\beta(x,y)$ notes the parametric marginal distribution for the pair $(x,y)$ induced from $p_\theta$.) Formalised into an explicit Bayesian framework, this strategy is known as \textbf{variational inference}, see for instance \citet{probml-advanced} for a derivation.
+
+In such a context, a straightforward approach is \textbf{maximisation of the likelihood}, that is finding the parameter vector $\hat  \beta$ that makes the candidate distribution closest to the observed data. Since maximising the likelihood or the log-likelihood leads to the exact same solution, we can formalise $\hat \beta$ as:
+$$\hat \beta=\arg\max_{\beta \in B} l_n(\beta)$$
+... where $l_i(\beta)=\ln p_\beta(x_i,y_i)$ notes the log-likelihood of one observation $(x_i,y_i)$ and where: $$l_n(\beta) = \ln \Big( \prod_{i=1}^{n} p_\beta(x_i,y_i) \Big)=\sum_{i=1}^{n} l_i(\beta) $$ ... notes the log-likelihood of a the full sample, assuming independence\footnote{\citet{zeroshot} do not make any explicit assumptions about independence between the observations of the sample — they only do so implicitly. And what exactly this independence assumption encompasses is probably up for debate. For instance, the COCO dataset of image-caption pairs we use for our reproduction of Dall-E includes an unusual amount of baseball images. Does the selection mechanism responsible for the very inclusion of images in the database qualify as a dependence mechanism? In what degree is the abundance of baseball images in COCO different from a collection of images extracted from the same movie? In the later case, the independence assumption would seem rather far-fetched. In the lack of a sound insight of the issue, we follow the rest of the literature in the assumption of independence.}. Since there is no closed form to this problem even for fairly simple $p_\beta$ distributions, we would like to use some kind of optimisation procedure in order to find the maximum, relying on the gradient (and possibly the hessian) of $l_n(\beta)$. The following sections try to get us to this point.
+
+\subsection{Amortised stochastic variational inference}
+
+Using our earlier introduction of $z$ and factorisation of $p$ (equation \ref{pdecompose}): 
+\begin{equation*}
+p(x,y)=\underbrace{\frac{p(x|z)}{p(z|x)}}_{\text{induced by  }(x,z)}p(y,z)
+\end{equation*}
+... we can move the resolution forward by observing that there are two completely distinct components in this distribution: on one hand the $(x,z)$ joint distribution, giving both $p(x|z)$ and $p(z|x)$, and on the other hand the $(y,z)$ joint distribution. Actually, if we choose two sub-distributions $f_{\theta}(x|z)\simeq p(x|z)$ and $g_{\psi}(y,z)\simeq p(y,z)$ belonging respectively to $\mathcal{F}\equiv\{f_{\theta}(\cdot|z)|\theta\in\Theta\subseteq\mathbb{R}^{F}, z\in\mathcal{Z}\}$ and $\mathcal{G}\equiv\{g_{\psi}|\psi\in\Psi\subseteq\mathbb{R}^{G}\}$. Remembering our conditional independence assumptions about $z$, we actually have:
+$$f_{\theta}(x|z)g_{\psi}(y,z)\simeq p(x|z)p(y,z)=p(x|y,z)p(y,z)=p(x,y,z)\simeq p_\beta(x,y,z)$$
+... which means that we do not lose any generality setting $\beta\equiv (\theta \quad \psi)$ and $p_\beta(x,y,z)\equiv f_{\theta}(x|z)g_{\psi}(y,z)$: we are just splitting the overall parametric candidate distribution into two more manageable sub-components.
+
+But now, since we can derive any marginal or conditional distribution from $p(x,y,z)$, we can in principle also derive an estimand for their parametric counterparts from $p_\beta$, or equivalently from the pair $(f_\theta, g_\psi)$. This is especially the case for $p(z|x)=p(x|z)p(z) / p(x)$ that appears in the expression of the likelihood. However, in practice, the computation of an estimation for the denominator $p(x)$ would require an unbearably costly integration of $p_\beta(x,y,z)$ over both $z$ and $y$.
+
+As an alternative, we approximate this term by a third family of distributions : $$h_\phi(z|x) \simeq p_{\theta,\psi}(z|x) \simeq p(z|x)$$ ... a strategy known as \textbf{amortisation}. The benefit is to avoid the costly explicit derivation of $p_{\theta,\psi}(z|x)$ but this comes at a price : we no longer have an exact log-likelihood maximisation, only an approximate one.
+
+Indeed, omitting the $i$ subscripts for clarity and replacing $\beta$ with $(\theta,\psi)$, we can express the log-likelihood of one observation as:
+\begin{align*}
+l_{x,y}(\theta,\psi)&=\ln p_{\theta,\psi}(x,y)\\
+&=\ln \int_{z|x \sim h_\phi} p_{\theta,\psi}(x,y,z) dz  \quad \text{(integrating over the latent $z$)} \\
+&=\ln \int_{z|x \sim h_\phi} f_{\theta}(x|z)g_\psi(y,z)\times\frac{h_\phi(z|x)}{h_\phi(z|x)} dz \\
+&=\ln \mathbb{E}_{z|x \sim h_\phi} \Big[ \frac{f_{\theta}(x|z)}{h_\phi(z|x)}g_\psi(y,z)  \Big]\\
+&\geqslant  \mathbb{E}_{z|x \sim h_\phi} \ln \Big[ \frac{f_{\theta}(x|z)}{h_\phi(z|x)}g_\psi(y,z)  \Big] \quad \text{(Jensen's inequality)} \\
+& = \mathbb{E}_{z|x \sim h_\phi} \Big[ \ln f_{\theta}(x|z) - \ln h_\phi(z|x) + \ln g_\psi(y,z)  \Big] \\
+& = \mathbb{E}_{z|x \sim h_\phi} \big[ \ln f_{\theta}(x|z) \big]- \mathbb{E}_{z|x \sim h_\phi}\Big[\ln h_\phi(z|x) - \ln g_\psi(y,z)  \Big] \\
+& = \mathbb{E}_{z|x \sim h_\phi} \big[ \ln f_{\theta}(x|z) \big]-\KL \big(h_\phi \| g_\psi(y,\cdot) \big) \equiv \underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)
+\end{align*}
+
+The main insight here is that we can define a lower bound on $l_{x,y}(\theta,\psi)$, namely $\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)$, known as the \textbf{evidence lower bound} or \textbf{ELBO}. This is so important that this is the \textit{only} equation stated (with variations and mistakes compared to here\footnote{In the equation at the core of the paper, there are four divergences from the one stated here. First, superficial notation differences, since we use $f_\theta$, $g_\psi$ and $h_\phi$ where they use $p_\theta$, $p_\psi$ and $q_\phi$. Then they make a mistake in the conditioning over $y$, using $p_\theta(y,z|x)$ and $q_\phi(y,z|x)$ where it should have been $p_\theta(x,y|z)$ and $q_\phi(z|x,y)$. There is also a narrative choice not to make the independence assumptions between $z$ and $y$ clear at this stage, thus writing $p_\theta(x,y|z)$ instead of just $p_\theta(x|z)$). And finally some extension to the principle of variational-inference, where conceive the Kullback-Leibler discrepancy as a penalty, that one may want to strengthen using a weight named $\beta$. This later choice however breaks the probabilistic interpretation of the overall method and is thus not explored in our report.}) in \citeauthor{zeroshot}'s paper ! Indeed, provided we can compute its derivative with respect to $\theta$, $\psi$ and $\phi$, something we will explore in the next section, we can now maximise the lower-bound instead of the (intractable) log-likelihood.
+
+1. gap is probably small -> good approximation
+
+2. interpretation of the lower bound
+
+\subsection{Derivative of the evidence lower bound}
+
+1. derivation is "easy" since we can split up components
+
+2. its is easier with theta and psi ; we can use monte-carlo
+
+3. but there are problems with discrete variables
+
+4. and there are more problems $z$
+
+maximising the ELB through numerical methods means computing the exact derivatives or estimating it. Since the distribution of the latent variable $z$ does not depend $\theta$:
+
+\begin{align*}
+\nabla_\theta\elb_{\theta,\phi}(x) & = \nabla_\theta \esp_{z|x \sim q_\phi} \Big[ \; \ln  \pt(x, z) -\ln \qp(z \mid x)  \; \Big] \\
+& = \esp_{z|x \sim q_\phi} \Big[ \; \nabla_\theta \ln \pt(x, z) - \underbrace{ \nabla_\theta \ln \qp(z \mid x) }_{= 0} \; \Big] \\
+& = \esp_{z|x \sim q_\phi} \big[ \; \nabla_\theta \ln \pt(x, z)\big] \\
+\end{align*}
+
+What remains can be estimated without bias by the empirical mean on a draw of $z$ realisations taken from the distribution $\qp$.
+However, since the distribution of $z$ depends on $\phi$, the same can not be said from $\nabla_\phi\elb_{\theta,\phi}(x)$, since one can no more interchange the derivation with the expectation.
+
+The traditional computational work-around, dubbed the \textbf{reparametrisation trick}, consists in making yet an other assumption, namely that $z$ can be expressed as:
+$$z=r(\varepsilon, \phi, x)$$
+... where $\varepsilon$ is a random variable that does \textit{not} depend on $\phi$ and where $r$ is some function that happens to have (or is designed so to have) that $\partial r_i / \partial \epsilon_j$ is defined and tractable. (Here, $r_i$ represents the $i$-th component of $r$, and $\varepsilon_j$ the $j$-th component of $\varepsilon$.) For instance, assuming $z$ is of dimension 1, if $z\sim \mathcal{N}(\mu,\sigma^2)$ then define $z=r(\varepsilon, \phi, x)=\mu+\sigma \varepsilon$ with $\varepsilon\sim\mathcal{N}(0,1)$. The nice thing is that now, the expectation is defined with respect to $\varepsilon$, which is independent of $\phi$, so that now we can interchange the derivation with the expectation:
+
+\begin{align*}
+\nabla_\phi\elb_{\theta,\phi}(x) & = \nabla_\phi \esp_{z|x \sim q_\phi} \Big[ \; \ln  \pt(x, z) -\ln \qp(z \mid x)  \; \Big] \\
+& = \nabla_\phi \esp_{\varepsilon} \Big[ \; \ln  \pt(x, r(\varepsilon,\phi,x)) -\ln \qp(r(\varepsilon,\phi,x) \mid x)  \; \Big] \\
+& = \esp_{\varepsilon} \Big[ \; \nabla_\phi \ln  \pt(x, r(\varepsilon,\phi,x)) - \nabla_\phi \ln \qp(r(\varepsilon,\phi,x) \mid x)  \; \Big]
+\end{align*}
+
+... which actually can be estimated by simulating draws from $\varepsilon$'s distribution.
+
+Unfortunately for us here, the authors prefer to suppose the latent variables as discrete, in order to leverage a discrete autoregressive modelisation of text (discrete) and the newly-encoded image tokens. But \enquote{as $q_{\psi}$ is a discrete distribution, and we cannot use the reparameterization gradient to maximize it.} \textcolor{red}{[POURQUOI LE FAIT QUE LA DISTRIBUTION SOIT DISCRÈTE EMPÊCHE L'ASTUCE?]} Instead, the opt for 
+
+
+\subsection{Encoder and decoder architecture}
+
+1. encoder and decoder are trained simultaneously
+
+2. description of the architecture
+
+\subsection{Auto-regressive transformer}
+
+1. auto-regression is a desired property for conditional inference
+
+2. it is trained separately but not clear why
+
+3. description of the architecture
+
+\subsection{How to estimate a joint distribution? \textcolor{red}{[EN DESSOUS: TRAVAIL EN COURS]}}
+
+
 \textcolor{red}{[]Les exposés que j'ai lus utilisent beaucoup de vocabulaire bayésien (prior, posterior), mais je ne suis pas sûr vraiment de si on fait vraiment du bayésien. Par exemple, je ne crois pas qu'il y ait d'a priori pour $(x,y)$, si?]}
 
 \textcolor{red}{[Attempt to use $\sim$ for distinguishing random var from actual realisations.]} 
@@ -553,43 +898,9 @@ After convergence, we can use the model to generate new images from text:
 
 \textcolor{red}{Dans l'exposé de Dall-E, il y aussi une ambiguïté entre les probabilités "réelles" inobservées, et les familles de proba paramétrées desquelles on essaye de s'approcher.}
 
-\subsection{Latent variables}
 
-From \cite{deepgen}:
 
-\blockquote{
-
-The idea behind \textbfd{latent variable models} is that we introduce the latent variables $\mathbf{z}$ and the joint distribution is factorized as follows: $p(\mathbf{x}, \mathbf{z})=p(\mathbf{x} \mid \mathbf{z}) p(\mathbf{z})$.
-[...]
-However, for training, we have access only to $\mathbf{x}$.
-Therefore, according to probabilistic inference, we should sum out (or marginalize out) the unknown, namely, z.
-As a result, the (marginal) likelihood function is the following:
-$$
-p(\mathbf{x})=\int p(\mathbf{x} \mid \mathbf{z}) p(\mathbf{z}) \mathrm{d} \mathbf{z}
-$$
-A natural question now is how to calculate this integral. [In some very limited cases, one can compute a closed-form formula but in general], it is a difficult task. [...] The simplest approach would be to use the Monte Carlo approximation:
-$$
-\begin{aligned}
-p(\mathbf{x}) &=\int p(\mathbf{x} \mid \mathbf{z}) p(\mathbf{z}) \mathrm{d} \mathbf{z} \\
-&=\mathbb{E}_{\mathbf{z} \sim p(\mathbf{z})}[p(\mathbf{x} \mid \mathbf{z})] \\
-& \approx \frac{1}{[n_\textrm{MC}]} \sum_{k} p\left(\mathbf{x} \mid \mathbf{z}_{k}\right)
-\end{aligned}
-$$
-where, in the last line, we use samples from the prior over latents, $\mathbf{z}_{k} \sim p(\mathbf{z})$. Such an approach is relatively easy and since our computational power grows so fast, we can sample a lot of points in reasonably short time. However (...) if $\mathbf{z}$ is multidimensional, and [$\dl$] is relatively large, we get into a trap of the curse of dimensionality, and to cover the space properly, the number of the approximation is simply very poor.
-
-We can use more advanced Monte Carlo techniques; however, they still suffer from issues associated with the curse of dimensionality. 
-}
-
-\subsection{Amortised stochastic variational inference}
-
-\subsection{Derivative of the evidence lower bound}
-
-\subsection{Encoder and decoder architecture}
-
-\subsection{Auto-regressive transformer}
-
-\subsection{How to estimate a joint distribution? \textcolor{red}{[EN DESSOUS: TRAVAIL EN COURS]}}
-Now, we can start to see the challenge with estimating the distribution $p(y|x)$ or $p(x,y)$ \textcolor{red}{[IS THERE A DIFFERENCE BETWEEN THESE TWO OBJECTIVES? IS THE OBJECT $p$ WELL-DEFINED SINCE IT IS A MIX OF CONTINUOUS (FOR THE IMAGES) AND DISCRETE (FOR THE TEXT) DISTRIBUTIONS? CAN YOU SIMPLY DEFINE CONDITIONAL DENSITIES AT ALL?]}. Estimating the density bluntly, with a multidimensional histogram or a kernel density estimation, is doomed to fail due to the \textbf{curse of dimensionality}, that expresses the fact that in order to divide uncertainty around the density by a factor of $k$, one needs to increase data set size by a factor of $k^d$. Such a requirement is prohibitive for a large $d$ !
+Now, we can start to see the challenge with estimating the distribution $p(y|x)$ or $p(x,y)$ \textcolor{red}{[IS THERE A DIFFERENCE BETWEEN THESE TWO OBJECTIVES? IS THE OBJECT $p$ WELL-DEFINED SINCE IT IS A MIX OF CONTINUOUS (FOR THE IMAGES) AND DISCRETE (FOR THE TEXT) DISTRIBUTIONS? CAN YOU SIMPLY DEFINE CONDITIONAL DENSITIES AT ALL?]}. Estimating the density bluntly, with a multidimensional histogram or a kernel density estimation, is doomed to fail due to the \textbf{curse of dimensionality}, that expresses the fact that 
 
 The second best option is to chose a parametric family of densities $\{p_\theta{}:\theta \in \Theta \subseteq \mathbb{R}^p, p\in\mathbb{N}\}$ and to try to find in this family the closest neighbour to the empirical distribution $p_{\mathcal{D}}$ \textcolor{red}{[NOT LEGIT! OK WITH EMP. CUMULATIVE DISTRIBUTION F, BUT NOT WITH DENSITY!]}, according to some well-suited measure between densities.
 The most natural candidate here is the \textbf{Kullback-Leibler divergence} $D_{\operatorname{KL}}(p_\theta\|p_\mathcal{D})=\int p(x) \ln \frac{p_\theta(x)}{p_\mathcal{D}(x)}=-H(p_\theta)+H(p,p_\mathcal{D})$ \textcolor{red}{[DERIVE THIS RESULT]}, where the first term is constant with respect to $\theta$ and the second term is the \textbf{cross-entropy}.
@@ -661,8 +972,6 @@ $$
 
 The first equality holds since $\pt(x)$ is constant with respect to $z$. In the last part, the second term is small since we deliberately chose the weights $\phi$ in order for $q_{\phi}(z \mid x)$ to approach $\pt (z \mid x)$ (recall that the Kullback-Leibler divergence is designed to measure proximity between distributions). Moreover, it is always positive (this is a property of Kullback-Leibler divergence to always be positive)! Thus we get a rather tight lower bound on the likelihood $\pt(x)$: $\elb_{\theta, \phi}(x)$, that we can maximise instead. This term is known as the \textbf{evidence lower-bound} or \textbf{ELB} or \text{ELBO}, by reference to $\ln \pt$ being sometimes called the \textit{evidence}.
 
-We can re-write ELBO further as:
-
 \begin{comment}
 % THIS IS DIRECTLY FROM PML2, THE UN COMMENTED VERSION IS ADAPTED TO MATCH CONDITIONNAL GENERATION AS DALL-E DOES
 \end{comment}
@@ -731,33 +1040,10 @@ where:
 - $p_{\psi}$ denotes the joint distribution over the text and image tokens modeled by the transformer.
 \end{displayquote}
 
-But how do we get the (yet unspecified) parameters of the model's  distributions ? "In the first stage of training, we maximize the ELB with respect to $\phi$ and $\theta$, which corresponds to training a dVAE on the images alone." But maximising the ELB through numerical methods means computing the exact derivatives or estimating it. Since the distribution of the latent variable $z$ does not depend $\theta$:
-
-\begin{align*}
-\nabla_\theta\elb_{\theta,\phi}(x) & = \nabla_\theta \esp_{z|x \sim q_\phi} \Big[ \; \ln  \pt(x, z) -\ln \qp(z \mid x)  \; \Big] \\
-& = \esp_{z|x \sim q_\phi} \Big[ \; \nabla_\theta \ln \pt(x, z) - \underbrace{ \nabla_\theta \ln \qp(z \mid x) }_{= 0} \; \Big] \\
-& = \esp_{z|x \sim q_\phi} \big[ \; \nabla_\theta \ln \pt(x, z)\big] \\
-\end{align*}
-
-What remains can be estimated without bias by the empirical mean on a draw of $z$ realisations taken from the distribution $\qp$.
-However, since the distribution of $z$ depends on $\phi$, the same can not be said from $\nabla_\phi\elb_{\theta,\phi}(x)$, since one can no more interchange the derivation with the expectation.
-
+But how do we get the (yet unspecified) parameters of the model's  distributions ? "In the first stage of training, we maximize the ELB with respect to $\phi$ and $\theta$, which corresponds to training a dVAE on the images alone." But 
 
 \subsection{Discretisation of images}
 
-The traditional computational work-around, dubbed the \textbf{reparametrisation trick}, consists in making yet an other assumption, namely that $z$ can be expressed as:
-$$z=r(\varepsilon, \phi, x)$$
-... where $\varepsilon$ is a random variable that does \textit{not} depend on $\phi$ and where $r$ is some function that happens to have (or is designed so to have) that $\partial r_i / \partial \epsilon_j$ is defined and tractable. (Here, $r_i$ represents the $i$-th component of $r$, and $\varepsilon_j$ the $j$-th component of $\varepsilon$.) For instance, assuming $z$ is of dimension 1, if $z\sim \mathcal{N}(\mu,\sigma^2)$ then define $z=r(\varepsilon, \phi, x)=\mu+\sigma \varepsilon$ with $\varepsilon\sim\mathcal{N}(0,1)$. The nice thing is that now, the expectation is defined with respect to $\varepsilon$, which is independent of $\phi$, so that now we can interchange the derivation with the expectation:
-
-\begin{align*}
-\nabla_\phi\elb_{\theta,\phi}(x) & = \nabla_\phi \esp_{z|x \sim q_\phi} \Big[ \; \ln  \pt(x, z) -\ln \qp(z \mid x)  \; \Big] \\
-& = \nabla_\phi \esp_{\varepsilon} \Big[ \; \ln  \pt(x, r(\varepsilon,\phi,x)) -\ln \qp(r(\varepsilon,\phi,x) \mid x)  \; \Big] \\
-& = \esp_{\varepsilon} \Big[ \; \nabla_\phi \ln  \pt(x, r(\varepsilon,\phi,x)) - \nabla_\phi \ln \qp(r(\varepsilon,\phi,x) \mid x)  \; \Big]
-\end{align*}
-
-... which actually can be estimated by simulating draws from $\varepsilon$'s distribution.
-
-Unfortunately for us here, the authors prefer to suppose the latent variables as discrete, in order to leverage a discrete autoregressive modelisation of text (discrete) and the newly-encoded image tokens. But \enquote{as $q_{\psi}$ is a discrete distribution, and we cannot use the reparameterization gradient to maximize it.} \textcolor{red}{[POURQUOI LE FAIT QUE LA DISTRIBUTION SOIT DISCRÈTE EMPÊCHE L'ASTUCE?]} Instead, the opt for 
 
 \subsection{Actual optimisation}
 
@@ -959,6 +1245,71 @@ Voir aussi \cite{neural-discrete}, \cite{high-fi-with-vqvae2} et \cite{subword-u
 \subsection{CUB-20}
 
 Mentionné comme jeu de données classique par \cite{zeroshot}
+
+\section{CLIP}
+
+CLIP stands for "Constrastive Language Pre-Training." This model is a neural network that was developped in order to associate to an image the best description among several possibilities. The goal of this model is to be able to achieve this association in a non-specific way (zero-shot learning), unlike neural networks trained for recognition in a particular field. In order to be as generalist as possible, the model was trained on 400 millions of image-text pairs. 
+
+The input of the model is not exactly a set of images and texts. Instead, the text is going through a text encoder and the images are passing through an image encoder. The vectors in the condensed space (or embedding space) obtained after this are integrated in matrix, with all the vectors for each piece of text and each image. 
+
+At training time, the model receives NxN images-texts pairs (in the matrix described before) of which there are Nx1 correct pairs and Nx(N-1) incorrect pairs. Its goal is to maximise a measure of similarity between the correct pairs and to minimise that of the incorrect pairs. 
+
+This learning of the notion of similarity allows to make accurate predictions on data outside of the training data. The quality of the encoders is then primordial, for they determine the vector representation of each piece of text and image, therefore we can say that the quality of the model relies largely on that of the condensed space. 
+
+At inference time, we give CLIP a set of texts and an image, and CLIP computes the similarity scores given the data provided by the encoders and the training weights of the model. The similarities obtained can be normalised in order to have a distribution of probabilities over the possible texts. The piece of text that receives the best score is considered to be the prediction of the model. It is important to note that the way the text are presented to CLIP has an importance: we can obtain better results by integrating the names of the different categories in a sentence. For example, given we want to predict of animal on a picture, it is better to propose as descriptions "a photo of cat/dog/elephant" instead of only using the name of the animal as a category. 
+
+CLIP can be used for other tasks than classification: it is possible not to normalise the scores of similarity and instead to use the raw score corresponding to the scalar product of the embedding. 
+
+The authors of the model note that despite the generality of the model, its performances remain of poor quality on data radically different from the training ones. Thus, CLIP does not really resolve the lack of generalisation abilities of this type of model, but gets around it using a generalist type of learning and a large volume of data. 
+
+\section{Empirical results}
+
+\subsection{CLIP}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=10cm]{Probability_scoring_clip.png}
+    \caption{CLIP probability score on a generation of 10 images}
+    \label{fig:clip_proba_exemple}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=6cm]{A mountain behind a garden highest.png}
+    \caption{The best image according to CLIP}
+    \label{fig:clip_image_exemple}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=12cm]{humanvsclip.png}
+    \caption{The results of the Humans vs CLIP experiment}
+    \label{fig:Humans vs CLIP}
+\end{figure}
+
+
+\subsection{Color analysis}
+
+\begin{figure}[H]
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{kmean image.png}
+  \caption{A mini dallE image}
+  \label{fig:sfig_kmean_image}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{kmean.png}
+  \caption{The colors detected}
+  \label{fig:sfig_kmean}
+\end{subfigure}
+\caption{Color extraction}
+\label{fig:kmean}
+\end{figure}
+
+
+
+
 
 \section{Une autre appendice}
 
