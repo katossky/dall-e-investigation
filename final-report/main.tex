@@ -417,22 +417,22 @@ Although with significant variability depending on the choice of color (in rgb c
 
 \section{Modelling}
 
-In this section, we build an implementation of DALLE. Results are available at \ref{subsec:tinydalle_results} and code is located on \href{https://github.com/cthiounn/dalle-tiny}{Github}. In order to reproduce DALLE's functionalities, the first step before implementing is to understand the initial paper and the different already available implementations, which are Boris Dayma's dalle-mini and lucidrains' program called dalle-pytorch. Then, we pick a image-caption dataset, a dVAE model and a transformer model. Finally, we train our model, called Tinydalle, according to the deep learning's principles.
+In this section, we build an implementation of DALLE. Results are available at \ref{subsec:tinydalle_results} and code is located on \href{https://github.com/cthiounn/dalle-tiny}{Github}. In order to reproduce DALLE's functionalities, the first step before implementing is to understand the initial paper and the different already available implementations, which are Boris Dayma's dalle-mini and lucidrains' program called dalle-pytorch. Then, we pick an image-caption dataset, a dVAE model and a transformer model. Finally, we train our model, called Tinydalle, according to the deep learning's principles.
 
 \subsection{Methodology}
 
 For each experimentation, we follow the same methodology in ten steps :
 
 \begin{enumerate}
-\item Pick a dataset and splitting it into train and test sets
+\item Pick a dataset and split it into train and test sets
     \item Opt for a dVAE model for compressing images into a compressed sequence of image tokens and vice versa
-    \item Choose a text tokenizer for translating text into a sequence of text tokens
+    \item Choose a text tokenizer for translating the text into a sequence of text tokens
     \item Preprocess data with the dVAE's encoder for each image in the dataset
     \item Preprocess data with the text tokenizer for each caption in the dataset
     \item Select a seq2seq/transformer model and adapt its decoder
     \item Implement a training loop
-    \item Search for hyperparameters
-    \item Launch with a chosen set of hyperparameters and save the model at regular frequency time
+    \item Perform a manual hyperparameters search
+    \item Launch with a chosen set of hyperparameters and save the model at a regular frequency-time
     \item Implement an inference code using a caption, the model and the dVAE's decoder
 \end{enumerate}
 
@@ -440,48 +440,65 @@ For each experimentation, we follow the same methodology in ten steps :
 
 \subsubsection{Dataset selection}
 
-We start with the entire MSCOCO 2017 dataset and we filter specific keywords of landscape, such as "mountain", "sea" in all captions. Since we want general images of landscape, we exclude keywords of individuals, such as human and animal related-keywords. In the MSCOCO 2017 dataset, each image have a set of five captions. We select a subset of images with the keywords and then pick the first caption. Finally, we extract a landscape-related dataset of 12134 train images and 506 test images from a starting size of respectively 118287 and 5000.
+We start with the entire MSCOCO 2017 dataset and we filter specific keywords of landscape, such as "mountain", "sea" in all captions. Since we want general images of landscape, we exclude keywords of individuals, such as human and animal related-keywords. In the MSCOCO 2017 dataset, each image has a set of five captions. We select a subset of images with the keywords and then pick the first caption. Finally, we extract a landscape-related dataset of 12134 train images and 506 test images from a starting size of respectively 118287 and 5000.
 
 \subsubsection{dVAE model selection}
-For dVAE model, we opt for the VQGAN model trained by Boris Dayma and used in dalle-mini, which compress an image into a sequence of image tokens with a vocabulary of 16384 image-tokens. An image of 256*256*3 (W*H*C) is converted into a sequence of 16*16 image tokens.
+For dVAE model, we opt for the VQGAN model trained by Boris Dayma and used in dalle-mini, which compresses an image into a sequence of image tokens with a vocabulary of 16384 image-tokens. An image of 256*256*3 (W*H*C) is converted into a sequence of 16*16 image tokens.
 
 \subsubsection{Text tokenizer selection}
 Like dalle-mini, we start from Huggingface's implementation of BartModel, so we use the BartTokenizer to process captions. It can translate a caption into a sequence of text tokens with a vocabulary of 50265 text tokens. We pad the output sequence to 255 text tokens.
 
 \subsubsection{Data preprocessing}
-Prior to the training phase, we preprocess data so that a pair of caption-image are turned into a pair of sequence of text and image tokens. Since the operation is the same for each step of the training phase, we choose to preprocess it beforehand in order to speed up the training process subsequently. Since MSCOCO 2017 dataset's images have various sizes, we resize and center-crop\footnote{the center-cropping operation may induce loss of information regarding the caption if there are items at the border} the images to fit into a 256*256 image size.
+Before the training phase, we preprocess data so that a pair of caption-image is turned into a pair of a sequence of text and image tokens. Since the operation is the same for each step of the training phase, we choose to preprocess it beforehand to speed up the training process subsequently. Since MSCOCO 2017 dataset's images have various sizes, we resize and center-crop\footnote{the center-cropping operation may induce loss of information and can mismatch the cropped image with the caption if there are items at the border} the images to fit into a 256*256 image size.
 
 \subsubsection{Seq2Seq modelling}
-We begin from the last checkpoint of BartModel and we reset its decoder in order to adapt the output of the Seq2Seq/transformer. BartModel usually uses text tokens and outputs text tokens. Therefore, decoder part must be set-up to output image tokens rather than text tokens. To do so, we change the decoder configuration and the last part of language modelling head to match the size of the image vocabulary. Since modelling image tokens is a new task for BartModel, we also reset weights of all layers of the decoder.
-Furthermore, since BartModel's last checkpoint have general knowledge of natural language understanding, we decide to freeze the encoder part since it holds a good understanding of English language and should speed up the training since there are less weights to modify.
+We begin from the last checkpoint of BartModel and we reset its decoder in order to adapt the output of the Seq2Seq/transformer. BartModel usually uses text tokens and outputs text tokens. Therefore, the decoder part must be set up to output image tokens rather than text tokens. To do so, we change the decoder configuration and the last part of the language modelling head to match the size of the image vocabulary. Since modelling image tokens is a new task for BartModel, we also reset the weights of all layers of the decoder.
+Furthermore, since BartModel's last checkpoint have general knowledge of natural language understanding, we decide to freeze the encoder part since it holds a good understanding of the English language and should speed up the training since there are fewer weights to modify.
 
 \subsubsection{Training loop design, hyperparameters search and training phase}
-Next, we fine-tune our seq2seq model with the train dataset and evaluate it with the test dataset, through many steps and epochs. The training loop operates with data parallelism and can use multiple GPUs to compute the prediction of the model. For this computation, the model uses the 256 image tokens as the target and the 255 text tokens and the 256-1 image tokens as the input of the prediction.
-Afterwards, both losses and backpropagation corrections are computed. In order to do so, the loss function is the cross entropy function which computes the "distance" between a target sequence and a predicted sequence. Since there are many ways to backpropagate, a strategy with the optimizer AdamW with a decay of the learning rate have been implemented.
-Deep learning metrics, such as mean loss on test dataset and mean loss on a small batch of train dataset are frequently sent to \href{https://wandb.ai/cthiounn/dalle-tiny}{WandB} in order to track different runs and to do a hyperparameters search.
+Next, we fine-tune our seq2seq model with the training dataset and evaluate it with the testing dataset, through many steps and epochs. The training loop operates with data parallelism and can use multiple GPUs to compute the prediction of the model. For this computation, the model uses the 256 image tokens as the target and the 255 text tokens and the 256-1 image tokens as the input of the prediction.
+Afterwards, both losses and backpropagation corrections are computed. In order to do so, the loss function is the cross-entropy function which computes the "distance" between a target sequence and a predicted sequence. Since there are many ways to backpropagate, a strategy with the optimizer AdamW with a decay of the learning rate has been implemented.
+Deep learning metrics, such as the mean loss on the testing dataset and the mean loss on a small batch of training dataset are frequently sent to \href{https://wandb.ai/cthiounn/dalle-tiny}{WandB} in order to track different runs and to do a hyperparameters search.
 We perform a manual hyperparameters search on which learning rate we will use for the model and we find that the best learning rate is around 5*10**5 with AdamW.
 
-We use \href{https://datalab.sspcloud.fr/}{Onyxia datalab}'s resources to perform the training. The datalab offers fastAI instances with S3 storage and 1-3 GPUs per instance. Most of the runs are using at least 2 GPUs to speed up the training and to fit a larger batch size into the GPUs. Some attempts to perform an accumulated gradient strategy have been made, but this strategy has not been used in recent training runs.
+We use \href{https://datalab.sspcloud.fr/}{Onyxia datalab}'s resources to perform the training. The datalab offers fastAI instances with S3 storage and 1-3 GPUs per instance. Most of the runs are using at least 2 GPUs to speed up the training and to fit a larger batch size into the GPUs. An accumulated gradient strategy has been made steadily on the last runs.
 
-To avoid overfitting the train dataset, we stop the training when the mean loss on test dataset has reached its lowest point and save the model weights and configuration.
+To avoid overfitting the training dataset, we stop the training when the mean loss on the testing dataset has reached its lowest point and save the model weights and configuration.
 
 \subsubsection{Inference phase}
 
-We load the adequate trained-model checkpoint and feed a caption into the text tokenizer then into the model. The trained model generates a new sequence of image tokens, according to parameters such as top-k, top-p (see **subsection** for explanation). Subsequently, the sequence of image tokens are sent into the dVAE's decoder and are translated into a new image.
+We load the adequate trained-model checkpoint and feed a caption into the text tokenizer and then into the model. The trained model generates a new sequence of image tokens, according to parameters such as top-k, top-p (see **subsection** for explanation). Subsequently, the sequence of image tokens is sent into the dVAE's decoder and is translated into a new image.
 
-\subsection{Tinydalle implementation on all MSCOCO 2017 dataset}
+\subsection{Other experimentations}
+\subsubsection{Tinydalle implementation on all MSCOCO 2017 dataset}
 
-Only the dataset selection has changed, the other parts remain unchanged. We keep our implementation but with bigger and more generic dataset.
+In this second experimentation, we use the entire MSCOCO 2017 dataset instead of extracting landscapes. Furthermore, we decide to keep all the captions, since a picture can be described in many ways in the natural language. Thus, the training dataset's and the testing dataset's sizes are respectively 118287*5 and 5000*5.
+Since only the dataset selection has changed, the other parts remain unchanged. We keep our implementation but with a bigger and more generic dataset.
 
-\subsubsection{Dataset selection}
+\subsubsection{Accumulated gradient strategy}
 
-In this second experimentation, we use the entire MSCOCO 2017 dataset instead of extracting landscapes. Furthermore, we decide to keep all the captions, since a picture can be described in many ways in the natural language. Thus, the train dataset's and the test dataset's sizes are respectively 118287*5 and 5000*5.
+An accumulated gradient strategy is used to avoid correcting the gradient too heavily with respect to the considered current batch when the batch size is small, resulting in unnecessary back and forth adjustment. Instead of backpropagating at each batch treated, we thus accumulate gradient computation and then backpropagate every chosen number of steps and reset all gradient computations subsequently. Because of the lesser number of errors, the accumulated gradient strategy should result in quicker learning.
 
+
+\subsubsection{To freeze or not to freeze the encoder ?}
+
+\cite{Thompson_2018}'s article suggests that freezing a subnetwork of the model has no significant effects on its performance with continued training. \cite{https://doi.org/10.48550/arxiv.2103.05247} show that fine-tuning only the output layer results in overfitting and degrading significantly the performance. Also, freezing self-attention and feedforward layers do not degrade the model performance.
+The upside of freezing a subnetwork of a model is to compute fewer gradients, and to fit more data into the GPUs, resulting in faster computation and training.
 
 
 \subsection{Tinydalle's results}\label{subsec:tinydalle_results}
 
-\textit{And eventually comparison with minidalle}
+\subsubsection{Main results}
+
+We fail to reproduce DALL-E's functionalities with both the landscape dataset and the complete MSCOCO 2017 dataset. We can generate new images. However, they are not related to the proposed caption. In the training phase, average test losses initially decrease during a short period of training, then increase. That increase means that the model is overfitting the training dataset. The model with the lesser average test loss generates color-uniform images, whereas the model with a later checkpoint generates a well-composed image. However, they are unrelated to the submitted caption.
+
+\subsubsection{Other results}
+
+The accumulated gradient strategy results in a smoother learning curve as expected but decreases both learning time and overfitting, resulting in a steady plateau for both average test loss and training test loss for a higher number of steps of accumulating gradient.
+
+With a small dataset, an overfitted model generates new images in the training dataset token distribution, with no regard for the submitted caption.
+
+Freezing the encoder part results in faster overall learning but also in reaching the overfitting phase quicker
 
 \pagebreak
 
