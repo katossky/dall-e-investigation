@@ -153,6 +153,56 @@
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
+@inproceedings{thompson-etal-2018-freezing,
+    title = "Freezing Subnetworks to Analyze Domain Adaptation in Neural Machine Translation",
+    author = "Thompson, Brian  and
+      Khayrallah, Huda  and
+      Anastasopoulos, Antonios  and
+      McCarthy, Arya D.  and
+      Duh, Kevin  and
+      Marvin, Rebecca  and
+      McNamee, Paul  and
+      Gwinnup, Jeremy  and
+      Anderson, Tim  and
+      Koehn, Philipp",
+    booktitle = "Proceedings of the Third Conference on Machine Translation: Research Papers",
+    month = oct,
+    year = "2018",
+    address = "Brussels, Belgium",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/W18-6313",
+    doi = "10.18653/v1/W18-6313",
+    pages = "124--132",
+    abstract = "To better understand the effectiveness of continued training, we analyze the major components of a neural machine translation system (the encoder, decoder, and each embedding space) and consider each component{'}s contribution to, and capacity for, domain adaptation. We find that freezing any single component during continued training has minimal impact on performance, and that performance is surprisingly good when a single component is adapted while holding the rest of the model fixed. We also find that continued training does not move the model very far from the out-of-domain model, compared to a sensitivity analysis metric, suggesting that the out-of-domain model can provide a good generic initialization for the new domain.",
+}
+@misc{https://doi.org/10.48550/arxiv.2103.05247,
+  doi = {10.48550/ARXIV.2103.05247},
+  
+  url = {https://arxiv.org/abs/2103.05247},
+  
+  author = {Lu, Kevin and Grover, Aditya and Abbeel, Pieter and Mordatch, Igor},
+  
+  keywords = {Machine Learning (cs.LG), Artificial Intelligence (cs.AI), FOS: Computer and information sciences, FOS: Computer and information sciences},
+  
+  title = {Pretrained Transformers as Universal Computation Engines},
+  
+  publisher = {arXiv},
+  
+  year = {2021},
+  
+  copyright = {Creative Commons Attribution 4.0 International}
+}
+
+@article{flickrentitiesijcv,
+    title={Flickr30K Entities: Collecting Region-to-Phrase Correspondences for Richer Image-to-Sentence Models},
+    author={Bryan A. Plummer and Liwei Wang and Christopher M. Cervantes and Juan C. Caicedo and Julia Hockenmaier and Svetlana Lazebnik},
+    journal={IJCV},
+    volume={123},
+    number={1},
+    pages={74-93},
+    year={2017}
+}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Blogposts
 
@@ -183,22 +233,6 @@ Il faudra décider de l'URL date
   year = 2021,
   url = {https://ml.berkeley.edu/blog/posts/dalle2/},
   %urldate = ,
-}
-
-@article{bperef,
-  author    = {Rico Sennrich and
-               Barry Haddow and
-               Alexandra Birch},
-  title     = {Neural Machine Translation of Rare Words with Subword Units},
-  journal   = {CoRR},
-  volume    = {abs/1508.07909},
-  year      = {2015},
-  url       = {http://arxiv.org/abs/1508.07909},
-  eprinttype = {arXiv},
-  eprint    = {1508.07909},
-  timestamp = {Mon, 13 Aug 2018 16:47:17 +0200},
-  biburl    = {https://dblp.org/rec/journals/corr/SennrichHB15.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
 % DALL-E mini
@@ -320,6 +354,14 @@ Il faudra décider de l'URL date
   title = {How to generate text: using different decoding methods for language generation with Transformers},
   year = 2020,
   url = {https://huggingface.co/blog/how-to-generate},
+  %urldate = ,
+}
+
+@online{congen,
+  author = {co:here},
+  title = {Controlling Generation with top-k & top-p},
+  %year = 2020,
+  url = {https://docs.cohere.ai/token-picking/},
   %urldate = ,
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -232,22 +232,29 @@ When working with image generation as we are, a central issue is the evaluation 
 \pagebreak
 \section{Data}
 
-This part will probably be shorter than when the project is centered on the analysis of a database. I think we can present a bit the content of the dataset, particularly the one we are using for the modelling.
-\textbf{Maybe we should do a bit of a descriptive analysis of the datasets ? Or just use their documentation ?}
+In this section, we introduce two datasets, used in this study. Indeed, in order to train a model that can generate an image from a caption, many datasets of pair image-caption are freely available. We use MS-COCO dataset and Flickr10k dataset for evaluating the performance of dalle-mini and for training our implementation.
 
 \subsection{MS-COCO data set}
 
 \subsubsection{Presentation}
 
+The MSCOCO dataset is a well-known dataset of images with object detection and segmentation and contains captions and is available at \href{https://cocodataset.org/}{MSCOCO's website}. There are two main versions of the dataset 2014 and 2017. MSCOCO dataset can also be accessed with the library fifty-one. The 2017 MSCOCO dataset is split into training, testing and validation sets of images and training and validation annotations. The training dataset's size is 118287 and the validation dataset's size is 5000.
+
 \subsubsection{Use}
+
+We first use the 2017 MSCOCO dataset for evaluating dalle-mini. We extract a sample of 100 images and pick one caption out of 5 and feed them to dalle-mini to generate 10 images. Then, we analyze the generated images with the base image, with CLIP and manual evaluation. We also generate 2 other captions for each base image.
+We also use the 2017 MSCOCO dataset for training our model. We first extract landscape-related captions and extract the subdataset and feed the latter in our model. As a second experiment, we also use the whole training dataset for our model.
 
 \subsection{Flickr data set}
 
 \subsubsection{Presentation}
 
+Flickr30k is another well-known dataset of images from Flickr, containing around 31 000 images. We use the Flickr30K Entities Dataset from \cite{flickrentitiesijcv}
+
+
 \subsubsection{Use}
 
-Extraction of part of the images for the training of our model.
+We use the Flickr30k dataset for evaluating dalle-mini. Unlike the 2017 MSCOCO dataset, we generate 5 images for each caption of the testing dataset. We compare the given CLIP score of each caption-image pair and run a color analysis on the generated images.
 
 \pagebreak
 
