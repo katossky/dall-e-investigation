@@ -181,7 +181,7 @@ Project conducted under the supervision of Benjamin Muller and Matthieu Futeral-
 
 We are deeply indebted to our supervisors Matthieu Futeral and Benjamin Müller from INRIA (Paris) for their friendly and insightful management of the project, and for offering us the opportunity to work on natural language processing in the first place. We would also like to thank Guillaume Lecué, our supervisor at ENSAE, for taking the time to proofread our mathematical demonstrations.
 
-We are also incredibly grateful to Boris Dayma for DALL·E mini, his on-going effort to transparently reproduce the \gls{dalle} model. He kindly answered to our messages asking for directions, even though we eventually did not have time to pursue the tracks he suggested. We are following his most recent advancement on DALL·E mega, his next generation model, with attention.
+We are also incredibly grateful to Boris Dayma for \gls{dallemini}, his on-going effort to transparently reproduce the \gls{dalle} model. He kindly answered to our messages asking for directions, even though we eventually did not have time to pursue the tracks he suggested. We are following his most recent advancement on DALL·E mega, his next generation model, with attention.
 
 \end{multicols}
 
@@ -257,15 +257,15 @@ We could possibly write a version of the abstract in french.
 
 \begin{multicols}{2}
 
-As of today, \gls{ml} — this set of statistical and computer science techniques aiming at designing self-improving algorithms — is widely used for a large range of applications, and it is the subject of a lot of ongoing research. In particular, the sub-fields of \gls{nlp} and computer vision focus on the comprehension and generation of human texts and images respectively. Recent models such as \glslink{gpt}{GPT-3} were found to be very good at text generation and attracted a lot of attention. However, recent work at the frontier between the two fields have proved the most interesting, since it forces program designers to develop a unified way to describe both images and texts.
+As of today, \gls{ml} — this set of statistical and computer science techniques aiming at designing self-improving algorithms — is widely used for a large range of applications, and it is the subject of a lot of ongoing research. In particular, the sub-fields of \gls{nlp} and computer vision focus on the comprehension and generation of human texts and images respectively. Recent models such as \glslink{gpt}{GPT-3} were found to be very good at text generation and attracted a lot of attention. However, recent work at the frontier between the two fields has proved to be the most interesting, since it forces program designers to develop a unified way to describe both images and texts.
 
-Typical tasks for these models are text-to-image (producing an image from a given \glslink{caption}{caption, or prompt}) or image-to-text (giving a caption to an image). Such tasks are interesting for at least two reasons. On the one hand, the ability to generate compelling human language based from images, or quality images based on a prompt, can be viewed as convincing steps towards artificial intelligence, demonstrating a certain degree of comprehension of the world. On the other hand, we can imagine various applications for such models, for example iteratively generating realistic pictures from descriptions in creative industries (architecture, fashion...) or fast image description for visually-impaired persons. 
+Typical tasks for these models are text-to-image (producing an image from a given \glslink{caption}{caption, or prompt}) or image-to-text (giving a caption to an image). Such tasks are interesting for at least two reasons. On the one hand, the ability to generate compelling human language based on images, or quality images based on a prompt, can be viewed as convincing steps towards artificial intelligence, demonstrating a certain degree of comprehension of the world. On the other hand, we can imagine various applications for such models, for example iteratively generating realistic pictures from descriptions in creative industries (architecture, fashion...) or fast image descriptions for visually-impaired persons. 
 
-In the present report, we study one of the few existing text-to-image models, namely the model \gls{dalle} by the company Open AI. The authors of the model train \enquote{a transformer that autoregressively models the text and image tokens as a single stream of data} on a massive dataset of 250 millions image- caption pairs harvested from the Internet. One part of the model is a \gls{vae} trained to compress large images into a small representation made of image \glspl{token}, and another is a \gls{transformer} that is able to model autoregressively the sequence of text tokens from the caption together with the image tokens obtained at the previous step. To put it in an other way, given a text description, the transformer can generate a concise sequence of "image tokens" summarizing the image, tokens from which the \gls{vae} component can then recreate a full, realistic picture.
+In the present report, we study one of the few existing text-to-image models, namely the model \gls{dalle} by the company Open AI. The authors of the model train \enquote{a transformer that autoregressively models the text and image tokens as a single stream of data} on a massive dataset of 250 million image-caption pairs harvested from the Internet. One part of the model is a \gls{vae} trained to compress large images into a small representation made of image \glspl{token}, and another is a \gls{transformer} that can model autoregressively the sequence of text tokens from the caption together with the image tokens obtained at the previous step. To put it in another way, given a text description, the transformer can generate a concise sequence of "image tokens" summarizing the image, tokens from which the \gls{vae} component can then recreate a full, realistic picture.
 
 \textcolor{red}{In this report, we describe in detail how \gls{dalle} is supposed to function, and we reproduce a down-scaled version of the model. Generative models being notoriously hard to test since testing involves judging whether some generated images do or do not correspond to a given description (a hard task even for a human), we also explore one idea for automating this process, based on the correct rendering of colours.}
 
-The task is however not straightfoward. Indeed, even though \citetitle{zeroshot} (\cite{zeroshot}) was published together with the announcement of the creation of \gls{dalle}, Open-AI decided not to make the model fully public, mainly for ethical concerns. Only the first component (the \gls{vae}) is available. Moreover, the article skims over many useful details. Therefore, in order to understand how this model works, and to generate images for our testing procedure, we have to rely on a public down-scaled replication of the model, \gls{dallemini} (\cite{wandbdallemini})
+The task is however not straightforward. Indeed, even though \citetitle{zeroshot} (\cite{zeroshot}) was published together with the announcement of the creation of \gls{dalle}, Open-AI decided not to make the model fully public, mainly for ethical concerns. Only the first component (the \gls{vae}) is available. Moreover, the article skims over many useful details. Therefore, in order to understand how this model works, and to generate images for our testing procedure, we have to rely on a public down-scaled replication of the model, \gls{dallemini} (\cite{wandbdallemini})
 %\footnote{We also marginally exploit yet another replication of \gls{dalle} called \gls{dalle} Pytorch (\cite{dallepytorch}).}
 . At the time of this writing, the same team is working on a promising soon-released \gls{dalle} Mega.
 
@@ -275,14 +275,14 @@ The task is however not straightfoward. Indeed, even though \citetitle{zeroshot}
 \textcolor{red}{
 During this project, we have three aims:
 \begin{enumerate}
-    \item to understand the complex architecture of the model
-    \item to run qualitative and quantitative analysis of the images the model can generate
-    \item to replicate \gls{dalle} version of our own, dubbed \gls{dalletiny}
+    \item To understand the complex architecture of the model
+    \item To run a qualitative and quantitative analysis of the images that the model can generate
+    \item To replicate a \gls{dalle} version of our own, dubbed \gls{dalletiny}
 \end{enumerate}
 }
 
 \textcolor{red}{
-In a first part, we introduce the theoretical background required to understand \gls{dalle}. Then, we present how we generated images and the way we analysed then. In the modelling part, we describe our attempt to train a version of \gls{dalle}.
+In the first part, we introduce the theoretical background required to understand \gls{dalle}. Then, we present how we generated images using \gls{dallemini}  and the way we analysed them. In the modelling part, we describe our attempt to train a version of \gls{dalle}.
 }
 
 \end{multicols}
@@ -309,12 +309,12 @@ $$
 where:
 \begin{enumerate}
     \item $q_{\phi}$ denotes the distribution over the $32 \times 32$ image tokens generated by the dVAE encoder given the RGB image $x^{2}$;
-    \item $p_{\theta}$ denotes the distribution over the RGB images generated by the dVAE decoder given the image tokens; and
+    \item $p_{\theta}$ denotes the distribution over the RGB images generated by the dVAE decoder given the image tokens; 
     \item $p_{\psi}$ denotes the joint distribution over the text and image tokens modeled by the transformer.
 \end{enumerate}
 \end{displayquote}
 
-The goal of section \ref{derivation} is to put the reader on firm foot for them to fully grasp the number of layers hidden under the authors' concision. Specifically, we will define mathematically our variables of interest, derive a parametric probabilistic model balancing tractability and plausibility and find a sound way to estimate those parameters. Then in section \ref{inference} we will see how one can use the now hopefully transparent probabilistic model to produce image outputs from text inputs, a step known in the \gls{ml} community as "inference". Then in the last section we will discuss the practical implementation of \gls{dalle}. In particular, we will present how \gls{dalle} uses a re-ranking of the generated image using CLIP, an other model from Open AI that we will describe. We will also highlight the substantial ways in which \gls{dallemini}, the open replication that we use in next chapters, differs from \gls{dalle}.
+The goal of section \ref{derivation} is to put the reader on firm foot for them to fully grasp the number of layers hidden under the authors' concision. Specifically, we will define mathematically our variables of interest, derive a parametric probabilistic model balancing tractability and plausibility and find a sound way to estimate those parameters. Then in section \ref{sec:inference} we will see how one can use the now hopefully transparent probabilistic model to produce image outputs from text inputs, a step known in the \gls{ml} community as "inference". Then in the last section we will discuss the practical implementation of \gls{dalle}. In particular, we will present how \gls{dalle} uses a re-ranking of the generated images using CLIP, another model from Open AI that we will describe. We will also highlight the substantial ways in which \gls{dallemini}, the open replication that we use in the next chapters, differs from \gls{dalle}.
 
 \subsection{Model derivation and estimation} \label{derivation}
 
@@ -324,7 +324,7 @@ The goal of section \ref{derivation} is to put the reader on firm foot for them 
 % https://stats.stackexchange.com/questions/408421/is-the-only-difference-between-conditional-generative-models-and-discriminative
 % https://stackoverflow.com/questions/879432/what-is-the-difference-between-a-generative-and-a-discriminative-algorithm
 
-In the machine-learning field, text-to-image models are a subset of the very general class of \textbf{supervised} methods, that is, methods that try to find the "best" possible map between a input space $\mathcal{Y}$ (in our case: all possible texts) to an output space $\mathcal{X}$ (all possible images) using a given number of pairs $(y,x)\in\mathcal{Y}\times\mathcal{X}$ of examples\footnote{Choosing $y$ to represent an input and $x$ for an output is unfortunate, since the convention usually goes the other way around.
+In the machine-learning field, text-to-image models are a subset of the very general class of \textbf{supervised} methods, that is, methods that try to find the "best" possible map between an input space $\mathcal{Y}$ (in our case: all possible texts) to an output space $\mathcal{X}$ (all possible images) using a given number of pairs $(y,x)\in\mathcal{Y}\times\mathcal{X}$ of examples\footnote{Choosing $y$ to represent an input and $x$ for an output is unfortunate, since the convention usually goes the other way around.
 However, we believe that it would bring more confusion to break the notation initiated by \citeauthor{zeroshot} in case one tries to read our report together with the original article.}.
 (In the next section, we will precisely define $\mathcal{X}$ and $\mathcal{Y}$, but the following stays valid for a wide range of mathematical spaces.)
 What "best" means usually boils down to the choice of \begin{enumerate*}[label=(\roman*)]
@@ -337,47 +337,47 @@ With these definitions and writing $\lambda_i(\theta)=\lambda(x_i,f_\theta(y_i))
     \min_{\theta\in\Theta} \sum_{i=1}^{n} \lambda_i(\theta)
 \end{equation}
 In practice, we use the gradient of the expression with respect to $\theta$ to guide our search for the optimal $\theta^\star$ and the optimal predictor $f^\star=f_{\theta^\star}$.
-Unfortunately, defining such a loss-function $\lambda$ between images is far from straight-forward.
+Unfortunately, defining such a loss-function $\lambda$ between images is far from straightforward.
 
 Indeed, it is challenging to "supervise" a text-to-image model as it would entail that there exists a meaningful loss function that measures "how close" two images are from each other, and this independently of the caption itself!
 First, notice that one unambiguous metric would be a binary function $\lambda(\hat x, x)=\mathbbm{1}(\hat x = x)$,
 % However, any (infinitesimal, when it makes sense) deviation from $x$ would be uninformative.
-stating that two images are either the exactly the same, or completely different, even they differ only by a single pixel.
+stating that two images are either exactly the same, or completely different, even if they differ only by a single pixel.
 That's probably too extreme : in a space as big as $\mathcal{X}$ (see after), it is virtually impossible to get a prediction $\hat x=f_\theta(y)$ that matches $x$ down to the pixel, even with millions of examples.
 
 If this binary measure is not an option, we need a less rigid definition.
-Unfortunately, there exists no agreed-upon quantitative distance between images, at least none that makes intuitive sense for a human\footnote{One may for instance define $\lambda$ as the euclidean distance over the values of pixels in the image. But this does not correspond to proximity between image in any conceivable sense for a human. For instance, an added random noise to the image would vastly augment $\lambda$ whereas a human would hardly see a change. Of course one could answer that the best evaluation would then be one performed by humans.
+Unfortunately, there exists no agreed-upon quantitative distance between images, at least none that makes intuitive sense for a human\footnote{One may for instance define $\lambda$ as the euclidean distance over the values of pixels in the image. But this does not correspond to the proximity between images in any conceivable sense for a human. For instance, an added random noise to the image would vastly augment $\lambda$ whereas a human would hardly see a change. Of course one could answer that the best evaluation would then be one performed by humans.
 That is, we could ask a (group of) human assessor(s) to provide quantitative feedback about the discrepancy, in their opinion, between two given images.
-But even if we disregard the actual difficulty of the task (can one consistently measure distance between pairs of images ? even when they do not represent anything concrete like pure random pixels ?) and potential lack of external validity of such an assessment (we necessarily have to chose \textit{some} humans which have their own biases on what two close images are), the overall process would not suit our need for computing a loss on hundreds of examples at each of the hundreds of steps of the optimisation procedure !}.
-And the very idea that the distance between two images can be defined independently of their common caption is questionable.
-It is on the contrary quite likely that for a more precise caption (say "an Indian child playing in a vast garden" vs. "a boy"), humans would scrutinise images longer until they find more evidence for difference.
+But even if we disregard the actual difficulty of the task (can one consistently measure the distance between pairs of images ? even when they do not represent anything concrete like pure random pixels ?) and the potential lack of external validity of such an assessment (we necessarily have to choose \textit{some} humans which have their own biases on what two close images are), the overall process would not suit our need for computing a loss on hundreds of examples at each of the hundreds of steps of the optimisation procedure !}.
+Furthermore, the very idea that the distance between two images can be defined independently of their common caption is questionable.
+It is on the contrary quite likely that for a more precise caption (say "an Indian child playing in a vast garden" vs. "a boy"), humans would scrutinise images longer until they find more evidence for a difference.
 As a consequence, on this specific task, there does not seem to exist an obvious loss function $\lambda$ that could guide a supervised model in the correct direction.
 
-One way to circumvent the problem is to introduce some probabilistic context. In \textbf{probabilistic machine-learning}, we frame the problem more broadly. First, we do not force $\hat x$ the prediction to be deterministic as in $\hat x=f_\theta(y)$. Instead, we add some uncertainty and suppose that we can draw $x$ from some unknown probability distribution $p$, something that we write $\tilde x \sim p(\tilde x|f_\theta(y))$. In turn, we can specify a family of candidate parametric distributions $\mathcal{R}=\{p_\mu(\tilde x, \hat x)|\mu \in \mathbf{M}\subseteq \mathbb{R}^M, M\in\mathbb{N}\}$ modelling the uncertainty around the prediction. For instance, we could define a family $\mathcal{R}=\{p_\sigma:\sigma \in \mathbb{R}_+\}$ so that the uncertainty around a predicted image $\hat x$ be a normal distribution centred around each individual pixel value $\hat x_i$, i.e. $p_{\sigma}(\tilde x | \hat x)\sim 
+One way to circumvent the problem is to introduce some probabilistic context. In \textbf{probabilistic machine-learning}, we frame the problem more broadly. First, we do not force $\hat x$ the prediction to be deterministic as in $\hat x=f_\theta(y)$. Instead, we add some uncertainty and suppose that we can draw $x$ from some unknown probability distribution $p$, something that we write $\tilde x \sim p(\tilde x|f_\theta(y))$. In turn, we can specify a family of candidate parametric distributions $\mathcal{R}=\{p_\mu(\tilde x, \hat x)|\mu \in \mathbf{M}\subseteq \mathbb{R}^M, M\in\mathbb{N}\}$ modelling the uncertainty around the prediction. For instance, we could define a family $\mathcal{R}=\{p_\sigma:\sigma \in \mathbb{R}_+\}$ so that the uncertainty around a predicted image would $\hat x$ be a normal distribution centred around each individual pixel value $\hat x_i$, i.e. $p_{\sigma}(\tilde x | \hat x)\sim 
 \mathcal{N}(\hat x, \sigma^2 \mathbf{I}_{\di})$. We add a tilde in $\tilde x$ to insist on the distributional nature of $\tilde x$ as opposed to the deterministic nature of $\hat x=f_\theta(y)$. More often than not, we write $p_{\mu,\theta}(x,y)\equiv p_\mu(x, f_\theta(y))$. Note that $\mathcal{P}=\{p_{\mu,\theta}:\mu \in\mathbf{M},\theta\in\Theta\}$ is also a family of probability distributions, although a more complex one than $\mathcal{R}$.
 
-That is great, because with this introduction of a family of distribution functions, we can use \textbf{\gls{mle}} to ground our choice for parameters: the "best" parameter $\mu^\star$ is the one that makes the observed sample more likely. For an arbitrary parametric distribution $q_\mu$ ($\mu \in \mathbf{M} \subseteq \mathbb{R}^Q, Q \in \mathbb{N}_\star$) of a random variable $z$, fo which we note $\mathbf{z}_n=(z_1, ..., z_n)$ an observed $n$-sample ($n \in \mathbb{N}_\star$), the maximum-likelihood principle tells us to solve the problem $\max_{\mu \in \mathbf{M}} q_\mu(\mathbf{z}_n)$ (where $q_\mu(\mathbf{z}_n)=\prod_{i=1}^nq_\mu(z_i)$ assuming independence\footnote{\citet{zeroshot} do not make any explicit assumptions about independence between the observations of the sample — they only do so implicitly. And what exactly this independence assumption encompasses is probably up for debate. For instance, the COCO dataset of image-caption pairs we use for our reproduction of \gls{dalle} includes an unusual amount of baseball images. Does the selection mechanism responsible for the very inclusion of images in the database qualify as a dependence mechanism? In what degree is the abundance of baseball images in COCO different from a collection of images extracted from the same movie? In the later case, the independence assumption would seem rather far-fetched. In the lack of a sound insight on the issue, we follow the rest of the literature in the assumption of independence.}). This is equivalent to $\max_{\mu \in \mathbf{M}} \sum_{i=1}^n \ln q_\mu(z_i)$ — the logarithm being a strictly increasing function, it does not change the maximisation program.
+With this introduction of a family of distribution functions, we can use \textbf{\gls{mle}} to ground our choice for parameters: the "best" parameter $\mu^\star$ is the one that makes the observed sample more likely. For an arbitrary parametric distribution $q_\mu$ ($\mu \in \mathbf{M} \subseteq \mathbb{R}^Q, Q \in \mathbb{N}_\star$) of a random variable $z$, for which we note $\mathbf{z}_n=(z_1, ..., z_n)$ an observed $n$-sample ($n \in \mathbb{N}_\star$), the maximum-likelihood principle tells us to solve the problem $\max_{\mu \in \mathbf{M}} q_\mu(\mathbf{z}_n)$ (where $q_\mu(\mathbf{z}_n)=\prod_{i=1}^nq_\mu(z_i)$ assuming independence\footnote{\citet{zeroshot} do not make any explicit assumptions about independence between the observations of the sample — they only do so implicitly. And what exactly this independence assumption encompasses is probably up for debate. For instance, the COCO dataset of image-caption pairs we use for our reproduction of \gls{dalle} includes an unusual amount of baseball images. Does the selection mechanism responsible for the very inclusion of images in the database qualify as a dependence mechanism? To what degree is the abundance of baseball images in COCO different from a collection of images extracted from the same movie? In the latter case, the independence assumption would seem rather far-fetched. In the lack of a sound insight on the issue, we follow the rest of the literature in the assumption of independence.}). This is equivalent to $\max_{\mu \in \mathbf{M}} \sum_{i=1}^n \ln q_\mu(z_i)$ — the logarithm being a strictly increasing function, it does not change the maximisation program.
 
 However, in the supervised setting where $z_i=(x_i,y_i)$, we have two competing options to define exactly which distribution correspond to $q_\mu$. We can choose to maximise the conditional $x|y$ or the joint $(x,y)$ likelihood, giving rise to two different strains of models: the first called \textit{discriminative}, \textit{regression} or \textit{predictive} models where  $q_\mu(x_i,y_i)=p_{\mu}(x_i|f_\theta(y_i))\equiv p_{\mu,\theta}(x_i|y_i)$, the second ones \textit{generative} models, where $q_\mu(x_i,y_i)=p_\theta(x_i, f_\theta(y_i))\equiv p_{\mu,\theta}(x_i,y_i)$, without the conditioning. Note that $\forall i=1..n$: $$p_{\mu,\theta}(x_i, y_i)=p_{\mu,\theta}(x_i|y_i) \times p_{\mu,\theta}(y_i)$$ ... and thus that the objective only differ by this crucial $p_{\mu,\theta}(y_i)$ factor.
 
-Predictive models being usually reserved to low-dimensional outputs \citep{probml-advanced}, \cite{zeroshot} opt for a \textbf{generative model} instead. Indeed, we face a situation where the output image space is high-dimensional (see next section). At this point, the reader may be puzzled : isn't the ultimate goal of \gls{dalle} to predict an image \textit{conditional on} a given prompt? The reader is completely right, and we will see later how at the end, because of suitable hypotheses (or restrictions, depending on the perspective) on the family $\mathcal{P}$, we can easily recover $p_{\mu,\theta}(x_i|y_i)$ from $p_{\mu,\theta}(x_i,y_i)$.
+Predictive models being usually reserved to low-dimensional outputs \citep{probml-advanced}, \cite{zeroshot} opt for a \textbf{generative model} instead. Indeed, we face a situation where the output image space is high-dimensional (see next section). At this point, the reader may be puzzled : isn't the ultimate goal of \gls{dalle} to predict an image \textit{conditional on} a given prompt? The reader is completely right, and we will see later how in the end, because of suitable hypotheses (or restrictions, depending on the perspective) on the family $\mathcal{P}$, we can easily recover $p_{\mu,\theta}(x_i|y_i)$ from $p_{\mu,\theta}(x_i,y_i)$.
 
-To conclude this section, let us rejoice that, after a long detour, we finally succeeded into casting our \textbf{supervised} text-to-image problem as a \textbf{probabilistic generative model}. Given a distribution $p_{\mu,\theta}\in\mathcal{P}$, where $\mu$ controls the probabilistic distribution and $\theta$ controls the deterministic part, we can now define an objective on which we can use classical optimisation procedures to find (or "learn") the "best" distribution :
+To conclude this section, let us rejoice that, after a long detour, we finally succeeded in casting our \textbf{supervised} text-to-image problem as a \textbf{probabilistic generative model}. Given a distribution $p_{\mu,\theta}\in\mathcal{P}$, where $\mu$ controls the probabilistic distribution and $\theta$ controls the deterministic part, we can now define an objective on which we can use classical optimisation procedures to find (or "learn") the "best" distribution :
 $$\max_{\substack{\mu\in\mathbf{M}\\\theta \in \Theta}} \sum_{i=1}^n \ln p_{\mu,\theta}(x_i,y_i)$$
 
-Doing so, we have actually just so slightly extended the standard (deterministic) machine-learning framework of optimisation to the probabilistic component $p$. Notice the similarity with eq. \ref{eq:minloss} ! It suffices to define $\lambda_i(\mu,\theta)\equiv - \ln p_{\mu,\theta}(x_i,y_i)$ to cast our problem as a standard (deterministic) machine-learning algorithm:
+Doing so, we have actually just slightly extended the standard (deterministic) machine-learning framework of optimisation to the probabilistic component $p$. Notice the similarity with eq. \ref{eq:minloss} ! It suffices to define $\lambda_i(\mu,\theta)\equiv - \ln p_{\mu,\theta}(x_i,y_i)$ to cast our problem as a standard (deterministic) machine-learning algorithm:
 $$\min_{\substack{\mu\in\mathbf{M}\\\theta \in \Theta}} \sum_{i=1}^n \lambda_i(\mu,\theta)$$
 
 In the next section, we will justify the "high-dimensional" nature of $\mathcal{X}$ and $\mathcal{Y}$.
 
 \subsubsection{Structure of the text-image space}
 
-The mathematical nature of a text $y \in \mathcal{Y}$ and of an image $x\in\mathcal{X}$ is a matter of convention. But whatever one's definition, one thing is for sure: the induced space will always be high-dimensional. As a bonus, the reader will get a better sense of what the data used to train the model really look like.
+The mathematical nature of a text $y \in \mathcal{Y}$ and of an image $x\in\mathcal{X}$ is a matter of convention. But whatever one's definition, one thing is for sure: the induced space will always be high-dimensional. As a bonus, the reader will get a better sense of what the data used to train the model really looks like.
 
 \paragraph{The (discrete) text space}
 
 In \gls{dalle}, a text $y$ is seen as a sequence of $\lt$ text units (or \emph{text \glspl{token}} or simply \emph{tokens} when the context is evident), where each can take up to $\ct$ different authorised values.
-For instance, if text units are ASCII-characters, a text $y$ then consists in 256 character tokens, taking values among the $\ct=2^7=128$ possible character values allowed by the ASCII code
+For instance, if text units are ASCII-characters, a text $y$ then consists of 256 character tokens, taking values among the $\ct=2^7=128$ possible character values allowed by the ASCII code
     \footnote{
     Even if ASCII uses 7 bits to encode characters, only 95 of them correspond to actual printable characters.
     The remaining slots are reserved for control characters, of which just a couple remain in use to this day, such as tabulation or carriage return.
@@ -385,7 +385,7 @@ For instance, if text units are ASCII-characters, a text $y$ then consists in 25
 .
 This \glslink{codebook}{\textbf{codebook}} size $\ct$ is also known as the \textbf{vocabulary size}, especially in the context where text tokens are not individual characters, but sequences of characters such as words or parts of words (subwords).
 
-Since the codebook (or vocabulary, we will use the two interchangeably from now on) lists all the possible values that a text token may take, this allows us to replace any chain of characters by an integer pointing to the entry in the vocabulary. 
+Since the codebook (or vocabulary, we will use the two interchangeably from now on) lists all the possible values that a text token may take, this allows us to replace any chain of characters with an integer pointing to the entry in the vocabulary. 
 In this context, a single text input $y$ is a chain of $\lt$ integer (or discrete, or categorical) variables, each taking value among the $\ct$ possible entries from the code.
 We thus consider that $\mathcal{Y}\equiv [\![1,\ct ]\!]^{\lt}$, which is a discrete space of $\ct^\lt$ elements. 
 
@@ -393,9 +393,9 @@ Alternatively, writing $\dt = \lt \times \ct$ and $\mathscr{M}_{a,b}(E)$ the spa
 This depiction will come in useful when we will want to discuss a probability distribution over the code for each token, in which case we will relax the $\{0,1\}$ restriction and authorise any value inside $[0,1]$ and interpret these values as probabilities.
 
 But how to define the codebook?
-There is a trade-off between compactness (for a fixed-size sequence of tokens, a smaller vocabulary entails faster computation) and generalisation (fewer entries means a given texts is rendered as longer sequence of tokens).
-A particularly efficient encoding strategy is when the vocabulary  is designed so that frequent sequences of characters occupy only one entry, insuring the most compact encoding as possible of the text into integers.
-In \gls{dalle} specifically, they use $\ct=16,384$ with an encoding scheme known as \textbf{byte-pair-encoding} (BPE). The strategy is taken from by \citet{subword-units}, who describe it as follows:
+There is a trade-off between compactness (for a fixed-size sequence of tokens, a smaller vocabulary entails faster computation) and generalisation (fewer entries mean a given text is rendered as a longer sequence of tokens).
+A particularly efficient encoding strategy is when the vocabulary is designed so that frequent sequences of characters occupy only one entry, insuring the most compact encoding possible of the text into integers.
+In \gls{dalle} specifically, they use $\ct=16,384$ with an encoding scheme known as \textbf{byte-pair-encoding} (BPE). The strategy is taken from \citet{subword-units}, who describe it as follows:
 
 \blockquote{
 BPE is a simple data compression technique that iteratively replaces the most frequent pair of bytes in a sequence with a single, unused byte.
@@ -405,9 +405,9 @@ Instead of merging frequent pairs of bytes, we merge characters or character seq
 We iteratively count all symbol pairs and replace each occurrence of the most frequent pair (‘A’, ‘B’) with a new symbol ‘AB’.
 }
 
-The practical vocabulary size (topping at few tens of thousands) is usually much smaller than the typical vocabulary mastered by an English speaker, which means that a lot of words will be split into subwords units.
+The practical vocabulary size (topping at a few tens of thousands) is usually much smaller than the typical vocabulary mastered by an English speaker, which means that a lot of words will be split into subwords units.
 Typically, the plural word "rats" will be decomposed as "rat" and "s".
-In order to fix the reader's ideas, here is the encoding of the first caption appearing in OpenAI's blog post introducing \gls{dalle}\footnote{OpenAI did not release the tokeniser of \gls{dalle}, but we assume it follows the same principle as their previous models \glslink{gpt}{GPT}-2 and GPT-3, of which only the former has been made public. Both GPT-2 and GPT-3 use a larger $\ct=50257$ vocabulary size (as compared to $16384$ for \gls{dalle}), but the value of the example remains. The code used to obtain the actual encoding is available at appendix \ref{textencoding}}. The phrase :
+In order to fix the reader's ideas, here is the encoding of the first caption appearing in OpenAI's blog post introducing \gls{dalle}\footnote{OpenAI did not release the tokeniser of \gls{dalle}, but we assume it follows the same principle as their previous models \glslink{gpt}{GPT}-2 and GPT-3, of which only the former has been made public. Both GPT-2 and GPT-3 use a larger $\ct=50257$ vocabulary size (as compared to $16384$ for \gls{dalle}), but the value of the example remains. The code used to obtain the actual encoding is available in appendix \ref{textencoding}}. The phrase :
 
 \texttt{"an illustration of a baby daikon radish in a tutu walking a dog"}
 
@@ -420,7 +420,7 @@ We see that the short but uncommon word "daikon" is split up into several text t
 \paragraph{The (continuous) image space}
 
 \gls{dalle} considers only square images of fixed side length $\si$, measured in pixels.
-Square images of side exceeding $\si$ are down-scaled whereas non-square images get cropped\footnote{
+Square-sized images exceeding $\si$ are down-scaled whereas non-square images get cropped\footnote{
 Cropping the images may have for adverse consequence that some of the image context is lost. It is implicitly assumed that the content of the image remains unchanged after cropping.
 }.
 Given that each of these $\li=\si^2$ colour pixels is described by three real numbers corresponding to the red, green and blue channels\footnote{
@@ -432,7 +432,7 @@ That said, the integer-nature of the colour channels will cause some computation
 
 So far we have made two points: \begin{enumerate*}[label=(\roman*)]
 \item both the text space $\mathcal{Y}$ and the image space $\mathcal{X}$ are high-dimensional ;
-\item with high-dimensional examples $(y,x)\in\mathcal{Y}\times\mathcal{X}$, it is better to estimate a generative probabilistic model than an discriminative one.
+\item with high-dimensional examples $(y,x)\in\mathcal{Y}\times\mathcal{X}$, it is better to estimate a generative probabilistic model than a discriminative one.
 \end{enumerate*}
 That means we need to pick an arbitrary parametric family of distributions $\mathcal{P}$, in which we will try to find the one distribution $p^\star$ that best matches the examples $(\mathbf{x}_n,\mathbf{y}_n)$ in the sense that $\prod_{i=1}^{n} p^\star(x_i,y_i)$ is maximal.
 
@@ -443,26 +443,26 @@ In the following, we present the main steps of the construction, and defer to th
 \begin{enumerate}
 
     \item Because the curse of dimensionality prevents us from estimating $p(x,y)$ directly, we introduce a \textbf{latent variable} $z$, of dimension $\dl \ll \di$, that nevertheless captures the underlying features of the images.
-    (See appendix \ref{app:latent} for a in-depth treatment of the interest to include latent variables to cope with the curse of dimensionality.)
+    (See appendix \ref{app:latent} for an in-depth treatment of the interest to include latent variables to cope with the curse of dimensionality.)
     This dimensionality reduction will help tractability, while hopefully preserving expressivity.
     
     Now, using Bayes' theorem twice, re-write: $$p(x,y)=\frac{p(x,y,z)}{p(z|x,y)}=\frac{p(x|y,z)p(y,z)}{p(z|x,y)}$$
     By weak analogy with Bayesian statistics, the authors call $p(x,y)$ the \textbf{evidence} and $p(y,z)$ the \textbf{prior}\footnote{
     This vocabulary comes from the unconditional case where $p(x)=\frac{p(x|z)p(z)}{p(z|x)}$ and where $p(z)$ is here correctly labelled as the arbitrary "prior" over the distribution of the unobserved $z$.
-    However, in our case, it does not make much sense to talk about a "prior" over $y$ since we can not "believe" anything about what we actually see for caption. In our opinion, the "prior" label brings more confusion that it actually helps. For instance, it wrongly suggests that we can "believe" arbitrary things about $p(y,z)$. Such hypotheses can only be made over the distribution of the unobserved $z$.
+    However, in our case, it does not make much sense to talk about a "prior" over $y$ since we can not "believe" anything about what we actually see for a caption. In our opinion, the "prior" label brings more confusion than it actually helps. For instance, it wrongly suggests that we can "believe" arbitrary things about $p(y,z)$. Such hypotheses can only be made over the distribution of the unobserved $z$.
     }.
     
     \item The nice thing here is that this decomposition stays true irrespective of the distribution of $z$.
-    We can thus chose the one we like best!
-    Tractability and expressivity will guide this choice. For tractability, we want to be able to compute the derivative of the log-likelihood and we would prefer $z$ to be discrete (since $y$ is discrete and that we need to estimate $p(y,z)$ in the numerator).
+    We can thus choose the one we like best!
+    Tractability and expressivity will guide this choice. For tractability, we want to be able to compute the derivative of the log-likelihood and we would prefer $z$ to be discrete (since $y$ is discrete and we need to estimate $p(y,z)$ in the numerator).
     
-    For expressivity, we would like a flexible class of distribution (that can approach almost any true underlying distribution when estimated) but also that the $z$ space have a meaningful Euclidean distance (in which closeness in the $z$ space would translate to some sense of proximity in the image space for human observer.
+    For expressivity, we would like a flexible class of distribution (that can approach almost any true underlying distribution when estimated) but also that the $z$ space have a meaningful Euclidean distance (in which closeness in the $z$ space would translate to some sense of proximity in the image space for human observers.)
     
     We delay the exact specification of the $z$ distribution to section \ref{sec:dvae} but for now let us highlight the following two \textbf{independence hypotheses} that serve both tractability and expressivity: $x|z \perp\!\!\!\perp y$ and $z|x \perp\!\!\!\perp y$.
     Stated in plain English, these two assumptions embed the natural idea that the distribution of a compressed image $z$ encoding a given image $x$ does \textit{not} depend on the corresponding caption $y$ and conversely that once we know a code $z$, the distribution of the uncompressed image $x$ does not depend on $y$ either.
     This captures the idea that $x$ and $z$ actually represent the same image, and that the passage back and forth between the two representations should be independent of the image's actual caption $y$.
     
-    The conditional assumptions brings us to the following decomposition of the $(x,y)$ distribution:
+    The conditional assumptions bring us to the following decomposition of the $(x,y)$ distribution:
     \begin{align*}
         p(x,y) & =\frac{p(x|y,z)p(y,z)}{p(z|x,y)} \\
         & \overset{\text{hyp.}}{=}\frac{p(x|z)p(y,z)}{p(z|x)}=\frac{p(x|z)}{p(z|x)}p(y,z)
@@ -483,7 +483,7 @@ In the following, we present the main steps of the construction, and defer to th
     But on the other hand, the explicit fully auto-regressive expression is not tractable in practice because the dependency of the current state $a_k$ on the past states $(a_1,..., a_{k-1})$ is both increasing over time and of considerable size at the last stages. And since each $a_k$ is discrete and can take thousands of possible distinct values, the distribution of $\mathbf{a}$ is in practice impossible to properly evaluate. ($\mathbf{a}$ can take $\ct^\lt\times\clat^\llat$ possible values.)
     
     There are two tricks to resolve the problem. \begin{itemize*}
-        \item We can try to summaries all the past variables up to token $k$ into a hidden latent variable $\eta_k$ and
+        \item We can try to summarise all the past variables up to token $k$ into a hidden latent variable $\eta_k$ and
         \item instead of frontally estimating $g_{\psi}$, we can estimate a transition between state $(a_{k-1},\eta_{k-1})$ and state $(a_{k},\eta_{k})$.
     \end{itemize*}
     Let us write $\gamma_{\psi,(a_{k-1},\eta_{k-1})}$ the density over the $k$-th state of the sequence, from state $k-1$.
@@ -505,7 +505,7 @@ In the following, we present the main steps of the construction, and defer to th
     \begin{align} \label{eq:elb_ours}
     \mathscr{l}_{x,y}(\theta,\psi) \geqslant \underbrace{\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)}{} \\ \equiv \mathbb{E}_z \Big[\ln f_{\theta,z}(x)\Big] - \textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big) \\ =\mathbb{E}_z \Big[\ln f_{\theta,z}(x)+\ln g_\psi(y,z) -\ln h_{\phi,x}(z)\Big]
     \end{align}
-    Said differently, there exists a lower-bound on the likelihood known as the \gls{elbo} and there are reason to beleive that the closest $h_{\phi,x_i}$ is to $p(\cdot|x)$, the tighter the bound. % (see appendix \label{app:tightness}).
+    Said differently, there exists a lower-bound on the likelihood known as the \gls{elbo} and there are reason to believe that the closest $h_{\phi,x_i}$ is to $p(\cdot|x)$, the tighter the bound. % (see appendix \label{app:tightness}).
     
     \item After a series of computational tricks giving additional requirements on the $z$ distribution (\ref{appendix:tricks}), we can show that the derivatives of $\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)$ with respect to every parameter can be estimated with \textbf{Monte-Carlo simulation}\footnote{In practice, we do not need to make the ELBO-derivatives explicit, and apply \textbf{automatic differentiation} instead.}. This means that we can now use standard optimisation methods such as \textbf{stochastic gradient ascent} to find the maximal $\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)$, a hopefully good-enough approximation of $\mathscr{l}_{x,y}(\theta,\psi,\phi)$. (See appendix  \ref{app:estimation} for the details of the stochastic gradient procedure.)
 \end{enumerate}
@@ -524,41 +524,41 @@ Now, if you compare \citeauthor{zeroshot}'s inequality (equation \ref{eq:elb_the
     \item First, superficial notation differences, since we use $f_{\theta,z}$, $g_\psi$ and $h_{\phi,x}$ where they use $p_\theta(\cdot|z)$, $p_\psi$ and $q_\phi(\cdot|x)$.
     \item Then they make a mistake in the conditioning over $y$, using $p_\theta(y,z|x)$ and $q_\phi(y,z|x)$ where it should have been $p_\theta(x,y|z)$ and $q_\phi(z|x,y)$.
     \item There is also a narrative choice not to make the independence assumptions between $z$ and $y$ clear at this stage, thus writing $p_\theta(x,y|z)$ instead of just $p_\theta(x|z)$).
-    \item And finally, the most substantial difference is an extension to (and departure from) the probabilistic interpretation, where citeauthor{zeroshot} prefer to deepen the view that $\textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big)$ is regularisation term, and thus add a tunable "regularisation weight" $\beta$ to the lot.
+    \item And finally, the most substantial difference is an extension to (and departure from) the probabilistic interpretation, where \citeauthor{zeroshot} prefer to deepen the view that $\textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big)$ is a regularisation term, and thus add a tunable "regularisation weight" $\beta$ to the lot.
 \end{itemize}   
 
 This later choice however breaks the probabilistic interpretation of the overall method and is thus not explored in our report.
 
 \subsection{Model inference} \label{sec:inference}
 
-In this section, we suppose that we have trained the model described at the preceding section, that is that we know parameters $\psi^\star$, $\phi^\star$ and $\theta^\star$ such as the \gls{elbo} is maximal over our sample of pairs of texts and images. From there, how do we actually generate images from new, unseen prompts?
+In this section, we suppose that we have trained the model described in the preceding section, that is that we know parameters $\psi^\star$, $\phi^\star$ and $\theta^\star$ such as the \gls{elbo} is maximal over our sample of pairs of texts and images. From there, how do we actually generate images from new, unseen prompts?
 
 The answer involves generating a sequence of image tokens $\tilde z\equiv (\tilde z_1 \; ... \; \tilde z_{\llat})$ based on the tokenised prompt $y$ and then reconstructing $\tilde x$ from $ \tilde z$ (where the $\tilde{\phantom{x}}$ emphasises randomness, as opposed to the given caption $y$). The reconstruction step is easy, as it just requires being able to sample from $f_{\theta^\star, \tilde z}$. But the sequence generation is unfortunately difficult !
 
-For reminder, writing $\mathbf{a}=(y \quad z)$ the concatenation of the text tokens and the image codes, we have not estimated the full distribution $g_{\psi^\star}(\mathbf{a})$ but only the token-to-token transition distribution $\gamma_{\psi^\star,(a,\eta)}$ ! (The bold font is used to highlight that $\mathbf{a}$ is a vector of tokens noted individually $a$, or $a_k$ when needed.) From the $k$-th token $a_k$ and knowing the latent summary variable $\eta_k$, we can easily sample the next token-latent pair $(a_{k+1},\eta_{k+1})$, but clearly not a sequence of $\llat$ tokens! Strictly speaking, eliciting the probability distribution of the $k$-tokens sequences would require to evaluate $\clat^k$ times $\gamma_{\psi^\star,\cdot}$ since each image tokens can take any of $\clat$ possible codebook values — and this without consideration for the possible stochasticity of the transition!
+For reminder, writing $\mathbf{a}=(y \quad z)$ the concatenation of the text tokens and the image codes, we have not estimated the full distribution $g_{\psi^\star}(\mathbf{a})$ but only the token-to-token transition distribution $\gamma_{\psi^\star,(a,\eta)}$ ! (The bold font is used to highlight that $\mathbf{a}$ is a vector of tokens noted individually $a$, or $a_k$ when needed.) From the $k$-th token $a_k$ and knowing the latent summary variable $\eta_k$, we can easily sample the next token-latent pair $(a_{k+1},\eta_{k+1})$, but clearly not a sequence of $\llat$ tokens! Strictly speaking, eliciting the probability distribution of the $k$-tokens sequences would require to evaluate $\clat^k$ times $\gamma_{\psi^\star,\cdot}$ since each image token can take any of $\clat$ possible codebook values — and this without consideration for the possible stochasticity of the transition!
 
 Concretely, \hypertarget{options-generation}{the actual sampling can be done in various different ways }(\cite{howtogen}):
 \begin{itemize}
-    \item We can simply take the one token with the highest probability, which is called \textbf{greedy decoding} (or greedy search), but may lead to unlikely sequences, as the long-term likelihood of \textit{sequences} does not necessarily align with the short-term transition between \text{tokens}.
-    \item A more elaborate version of the previous option is called \textbf{beamsearch}. This methods involves the voice of a value, the number of beams, that will be denoted $l$ in the following explanation. At step 1, the model chooses the $l$ tokens with the highest conditional probability. Then, for each of these tokens, the model looks at the next $l$ tokens with the highest probability. Based on all those combinations, the model drops all sequences but the $l$ for which the probability of the sequence of tokens is highest (that is, the product of the conditional probability of token at step 1 and at step 2). So, at any time, the model bears in mind $l$ possible sequences. This method allows not to miss high probability token "hidden" behind low probability token. It is always better than the previous one in terms of probability of the whole sequence. 
-    \item Instead of choosing the highest probable next token, we can also sample from the whole distribution, but this requires to restrict the probability distribution in which the sampling in performed, lest we fall back to the initial incalculability. In order to do so, \textbf{top-$k$ sampling} restricts, at each step, the distribution of the possible tokens to the $k$ tokens with the highest probability. The probabilities of the tokens that were filtered is redistributed on the tokens that were kept so that the total probability mass remains equal to one. 
-    \item A more adaptive restriction is the one used by \textbf{top-$p$ sampling} (or top-$p$ nucleus sampling). At each step, we keep a certain number of possible tokens so that the probability of all the tokens kept is greater than or equal to the parameter top-$p$. Top-$p$ and top-$k$ sampling can also be used simultaneously\footnote{In the case of the Huggingface library that we use in our own generation, it is unclear which of the two methods has the priority, but given the order in which things are done in the code, it seems that top-p acts after top-$k$ when both methods are used simultaneously.}.
+    \item We can simply take the one token with the highest probability, which is called \textbf{greedy decoding} (or greedy search), but this may lead to unlikely sequences, as the long-term likelihood of \textit{sequences} does not necessarily align with the short-term transition between \text{tokens}.
+    \item A more elaborate version of the previous option is called \textbf{beamsearch}. This method involves the choice of a value, the number of beams, that will be denoted $l$ in the following explanation. At step 1, the model chooses the $l$ tokens with the highest conditional probability. Then, for each of these tokens, the model looks at the next $l$ tokens with the highest probability. Based on all those combinations, the model drops all sequences but the $l$ for which the probability of the sequence of tokens is highest (that is, the product of the conditional probability of token at step 1 and step 2). So, at any time, the model bears in mind $l$ possible sequences. This method allows not to miss the high probability token "hidden" behind the low probability token. It is always better than the previous one in terms of the probability of the whole sequence. 
+    \item Instead of choosing the highest probable next token, we can also sample from the whole distribution, but this requires restricting the probability distribution in which the sampling is performed, lest we fall back to the initial incalculability. In order to do so, \textbf{top-$k$ sampling} restricts, at each step, the distribution of the possible tokens to the $k$ tokens with the highest probability. The probabilities of the tokens that were filtered are redistributed on the tokens that were kept so that the total probability mass remains equal to one. 
+    \item A more adaptive restriction is the one used by \textbf{top-$p$ sampling} (or top-$p$ nucleus sampling). At each step, we keep a certain number of possible tokens so that the probability of all the tokens being kept is greater than or equal to the parameter top-$p$. Top-$p$ and top-$k$ sampling can also be used simultaneously\footnote{In the case of the Huggingface library that we use in our own generation, it is unclear which of the two methods has the priority, but given the order in which things are done in the code, it seems that top-p acts after top-$k$ when both methods are used simultaneously.}.
 \end{itemize}
 
 
 \subsection{Model implementations}
 
-Now that the reader understand the rationale for Dall$\cdot$E's model, they understand that there might be many different flavours of the model depending on the exact values of the parameters and the exact choice of the probability distribution families. Parameters are summarised in table \ref{tab:parameters} and choices of distribution families are described in the following section.
+Now that the reader understands the rationale for Dall$\cdot$E's model, they understand that there might be many different flavours of the model depending on the exact values of the parameters and the exact choice of the probability distribution families. Parameters are summarised in table \ref{tab:parameters} and choices of distribution families are described in the following section.
 
-The actual implementation also depends on additional considerations, notably the data collection and training procedures. As part of the final release of Dall$\cdot$E, \citeauthor{zeroshot} are also introducing a completely different model, \gls{clip}, whose task is assess numerically the proximity between a text and an image. Since we will use CLIP for our own quantitative experiments, it is worth an other section.
+The actual implementation also depends on additional considerations, notably the data collection and training procedures. As part of the final release of Dall$\cdot$E, \citeauthor{zeroshot} are also introducing a completely different model, \gls{clip}, whose task is to assess numerically the proximity between a text and an image. Since we will use CLIP for our own quantitative experiments, it is worth another section.
 
-With variations possible at each and every steps, there might be eventually many different flavours of Dall$\cdot$E. In the end of the report, we use \gls{dallemini} a version that has been made public, and highlight the divergence from the original.
+With variations possible at each and every step, there might be eventually many different flavours of Dall$\cdot$E. At the end of the report, we use \gls{dallemini} a version that has been made public, and highlight the divergence from the original.
 
 \subsubsection{Choice of distribution families}
 
 \paragraph{\gls{dvae}} \label{sec:dvae}
 
-For the variational auto-encoder pair $(f_{\theta,z}, h_{\phi,x})$, \citeauthor{zeroshot} use deterministic neural networks, together with assumption about the distribution of the residuals. The two aspects are not clearly articulated in the paper. Here the description of the description of the two neural networks :
+For the variational auto-encoder pair $(f_{\theta,z}, h_{\phi,x})$, \citeauthor{zeroshot} use deterministic neural networks, together with assumption about the distribution of the residuals. The two aspects are not clearly articulated in the paper. Here the description of the two neural networks :
 
 \blockquote{The dVAE encoder and decoder are convolutional ResNets with bottleneck-style resblocks. The models primarily use 3 × 3 convolutions, with 1 × 1 convolutions along skip connections in which the number of feature maps changes between the input and output of a resblock. The first convolution of the encoder is 7 × 7, and the last convolution of the encoder (which produces the 32 × 32 × 8192 output used as the logits for the categorical distributions for the image tokens) is 1 × 1. Both the first and last convolutions of the decoder are 1 × 1. The encoder uses max-pooling [...] to downsample the feature maps, and the decoder uses nearest-neighbor upsampling.}
 
@@ -566,10 +566,10 @@ And here is our understanding of the $z$ and $x$ distributions. On one hand, $h_
 
 \paragraph{\Gls{transformer}}
 
-For the auto-regressive component $g_\psi$, \citeauthor{zeroshot} use a family of distributions called "transformers" made famous in the literature by \citetitle{attneed} (\cite{attneed}). We do no wish to enter the details, but a \textbf{transformer} is a sequence-to-sequence neural network, that constantly updates a hidden state variable through a tunable mechanism of \textbf{attention}. (Intuitively, the attention mechanism gives the possibility to learn what exactly is worth remembering from the past of the sequence. For instance, it can learn that whenever it encounters a parenthesis, it must remember an hidden "parenthesis open" state, in order to consistently close the parenthesis later on.)
+For the auto-regressive component $g_\psi$, \citeauthor{zeroshot} use a family of distributions called "transformers" made famous in the literature by \citetitle{attneed} (\cite{attneed}). We do not wish to enter the details, but a \textbf{transformer} is a sequence-to-sequence neural network, that constantly updates a hidden state variable through a tunable mechanism of \textbf{attention}. (Intuitively, the attention mechanism gives the possibility to learn what exactly is worth remembering from the past of the sequence. For instance, it can learn that whenever it encounters a parenthesis, it must remember a hidden "parenthesis open" state, in order to consistently close the parenthesis later on.)
 A considerable advantage of transformers in practice is, because of design tricks, that they are easier than traditional recursive / auto-regressive models to train in parallel on multi-core machines or on clusters.
 
-Contrary to the \gls{dvae}, the transformer has not been released by Open-AI, and isn't described in much details. It uses a "12-billion parameter sparse transformer" and refer to \cite{long-sequences} for implementation details.
+Contrary to the \gls{dvae}, the transformer has not been released by Open-AI, and isn't described in much detail. It uses a "12-billion parameter sparse transformer" and refer to \cite{long-sequences} for implementation details.
 It has \enquote{64 attention layers, each of which uses 62 attention heads with a per-head state size of 64} and \enquote{uses three kinds of sparse attention masks}.
 
 \subsubsection{Training} \label{section:training}
@@ -577,20 +577,20 @@ It has \enquote{64 attention layers, each of which uses 62 attention heads with 
 The \gls{vae} is trained first, then the \gls{transformer} is trained separately. The reason for not alternating the training of the two at each step of the optimisation procedure is not clear to us.
 
 It uses "250 million image-text pairs collected from the internet" that :
-\blockquote{... incorporates Conceptual Captions, the text-image pairs from Wikipedia, and a filtered subset of YFCC100M. (...) These filters include discarding instances whose captions are too short, are classified as non-English by the Python package \texttt{cld3}, or that consist primarily of boilerplate phrases such as “photographed on <date>” (...) We also discard instances whose images have aspect ratios not in [1/2, 2]. If we were to use to very tall or wide images, then the square crops used during training would likely exclude objects mentioned in the caption.}
+\blockquote{... incorporates Conceptual Captions, the text-image pairs from Wikipedia, and a filtered subset of YFCC100M. (...) These filters include discarding instances whose captions are too short, are classified as non-English by the Python package \texttt{cld3}, or that consist primarily of boilerplate phrases such as “photographed on <date>” (...) We also discard instances whose images have aspect ratios not in [1/2, 2]. If we were to use very tall or wide images, then the square crops used during training would likely exclude objects mentioned in the caption.}
 
 The original paper devotes considerable treatment for optimising and accelerating the training, down to considerations for the choice between 16-bit or 32-bit float encoding. Meta-parameters such as $\beta_t$, $\tau_t$ and $r_t$ (where $t$ denotes a step in the optimisation procedure) are repeatedly diminished and annealed during training according to specified schedules. (See appendix  \ref{app:estimation} for en example of the estimation procedure with varying $\tau_t$ and $r_t$.)
 
 \subsubsection{\gls{clip}}
 
-When working with image generation as we are, a central issue is the evaluation of the quality of the outputs. How can one decide whether a picture is coherent with a given prompt ? CLIP is one model that can be used for such task. It provides a number representing the quality of the fit between a prompt and an image and can thus be used as a quality measure of DALLE's outputs \citet{learntransf, openaiclip}. This number can either be a real number, or a probability if, in order to see what picture best matches a text, we normalise the values. We spent some time evaluating if CLIP notation was similar to how humans would do it, as will be described in the Empirical approach part. \hyperref[sec:clipdetails]{See this appendix for more details about CLIP.}
+When working with image generation as we are, a central issue is the evaluation of the quality of the outputs. How can one decide whether a picture is coherent with a given prompt ? CLIP is one model that can be used for such a task. It provides a number representing the quality of the fit between a prompt and an image and can thus be used as a quality measure of DALLE's outputs \citet{learntransf, openaiclip}. This number can either be a real number, or a probability if, in order to see what picture best matches a text, we normalise the values. We spent some time evaluating if CLIP notation was similar to how humans would do it, this will be described in the Empirical approach part. See appendix \ref{app:more-CLIP} for further details on CLIP. 
 
 \subsubsection{Variations: \gls{dallemini}, \gls{dalletiny}}
 
 We used 3 datasets for our model:
 ﻿Conceptual Captions Dataset which contains 3 million image and caption pairs.
 ﻿Conceptual 12M which contains 12 million image and caption pairs.
-The OpenAI subset of YFCC100M which contains about 15 million images and that we further sub-sampled to 2 million images due to limitations in storage space. We used both title and description as caption and removed html tags, new lines and extra spaces.
+The OpenAI subset of YFCC100M contains about 15 million images and we further sub-sampled to 2 million images due to limitations in storage space. We used both title and description as caption and removed html tags, new lines and extra spaces.
 
 
 
@@ -626,7 +626,7 @@ The dataset used by Dall$\cdot$E was not released publicly. In this section, we 
 
 \subsubsection{Presentation}
 
-The MSCOCO dataset is a well-known dataset of captioned images which is available at \href{https://cocodataset.org/}{MSCOCO's website}. (Alongside caption, it also includes numerous other details such as object names and location, which is used for object detection.) There are two main versions of the dataset from 2014 and 2017 respectively. The 2017 MSCOCO dataset is split into training, testing and validation sets of images and training and validation annotations. The size of the training dataset is $118,287$ and that of the validation dataset is $5,000$.
+The MSCOCO dataset is a well-known dataset of captioned images which is available at \href{https://cocodataset.org/}{MSCOCO's website}. (Alongside the caption, it also includes numerous other details such as object names and location, which is used for object detection.) There are two main versions of the dataset from 2014 and 2017 respectively. The 2017 MSCOCO dataset is split into training, testing and validation sets of images and training and validation annotations. The size of the training dataset is $118,287$ and that of the validation dataset is $5,000$.
 
 \subsubsection{Use}
 
@@ -636,7 +636,9 @@ We extract a sample of 100 images and pick one caption out of 5 and feed them to
 Then, we analyze the generated images with the base image, with CLIP and manual evaluation.
 We also generate 2 other captions for each base image.
 
-We also use the 2017 MSCOCO dataset for training our model, \gls{dalletiny}. We first extract landscape-related captions and extract the sub-dataset and feed the latter to our model.
+We also used 3 prompts and the corresponding images from this dataset for the analysis of the influence of the generation parameters on the quality of the images.
+
+Finally, we use the 2017 MSCOCO dataset for training our model, \gls{dalletiny}. We first extract landscape-related captions and extract the sub-dataset and feed the latter to our model.
 As a second experiment, we also use the whole training dataset for our model.
 
 \subsection{Flickr30k}
@@ -657,7 +659,7 @@ We compare the given CLIP score of each caption-image pair and run a color analy
 
 \begin{multicols}{2}
 
-The capabilities of text-to-image may be impressive at first sight, but as stated in \cite{probml-advanced}, they are notoriously difficult to evaluate objectively. In this section, we present our attempts to developing such a rigorous automated assessment. Since \gls{dalle} is not public, we rely on \gls{dallemini} instead. We also heavily rely on \gls{clip} for our automation effort, and that is why we start with an exploration of CLIP's capabilities.
+The capabilities of text-to-image may be impressive at first sight, but as stated in \cite{probml-advanced}, they are notoriously difficult to evaluate objectively. In this section, we present our attempts to develop such a rigorous automated assessment. Since \gls{dalle} is not public, we rely on \gls{dallemini} instead. We also heavily rely on \gls{clip} for our automation effort, and that is why we start with an exploration of CLIP's capabilities.
 
 % The main objective of this empirical study is to better understand the models studied, in order to integrate these lessons into our own modelling attempts.
 
@@ -668,7 +670,7 @@ The capabilities of text-to-image may be impressive at first sight, but as state
 
 \subsection{CLIP}
 
-The reader might remember from earlier sections that CLIP is a model which takes an image-caption pair as input and computes an adequacy score between them. The (absolute) scores range on an unbounded scale where higher scores means higher adequacy. When dealing with several images, absolute scores can then be rescaled to (relative) probability scores. But how reliable are these scores? We find that overall CLIP agrees with human judgement but that \textcolor{red}{CONCLUSION 2ND SECTION}.
+The reader might remember from earlier sections that CLIP is a model which takes an image-caption pair as input and computes an adequacy score between them. The (absolute) scores range on an unbounded scale where higher scores mean higher adequacy. When dealing with several images, absolute scores can then be rescaled to (relative) probability scores. But how reliable are these scores? We find that overall CLIP agrees with human judgement but that \textcolor{red}{CONCLUSION 2ND SECTION}.
 
 \subsubsection{CLIP and humans agree on text-image adequacy}
 
@@ -684,16 +686,16 @@ To test our confidence in CLIP, the following experiment is performed to determi
   \item Comparison with the adequacy score established by CLIP.
 \end{itemize}
 
-The results can be found in figure \ref{fig:Humans vs CLIP}, they show that on most caption/image pairing, CLIP and humans agree on the score to give. All good captions for CLIP are considered good by humans. However, the limitation of the experiment is that some captions are so accurate that the probability score is very close to 1 for CLIP, causing other captions that are relatively good from a human perspective to score close to 0, that gives a messy column for this specific score.
+The results can be found in figure \ref{fig:Humans vs CLIP}, they show that on most caption/image pairing, CLIP and humans agree on the score to give. All good captions for CLIP are considered good by humans. However, the limitation of the experiment is that some captions are so accurate that the probability score is very close to 1 for CLIP, causing other captions that are relatively good from a human perspective to score close to 0, which gives a messy column for this specific score.
 
-\subsubsection{Inquiries on CLIP using FLickr's test set}
+\subsubsection{Inquiries on CLIP using Flickr's test set}
 
 Now that we are confident in CLIP's ability to provide meaningful scores (a qualitative test), we test quantitatively the quality of the images generated by \gls{dallemini} using the model scores. 
 
 Using the whole Flickr test set, for each prompt: 
 \begin{itemize}
     \item We have the original image from the data set and CLIP's score between the two, this is the first list of scores.
-    \item We generate five different images for convenience, then we take the mean of CLIP's scores of the five images, sample randomly one of the five images generated, and keep its score, this is the second list of scores. For the computation of the correlation coefficients, we take the mean of the five scores instead of sampling one score random among the five. 
+    \item We generate five different images for convenience, then we take the mean of CLIP's scores of the five images, sample randomly one of the five images generated, and keep its score, this is the second list of scores. For the computation of the correlation coefficients, we take the mean of the five scores instead of sampling one score randomly among the five. 
 \end{itemize}
 
 We obtain:
@@ -713,7 +715,7 @@ In an attempt to characterise the quality of the images generated, we compute tw
     \item $\rho$ = 0.09, p-valeur = 0.39\% for Spearman
     \item r = 0.113, p-valeur = 0.03\% for Pearson
 \end{itemize}
-Both correlations are close to 10\%. If CLIP is working correctly and the image generation model is good as well, the images generated should be of a good quality, and thus their adequacy score with the prompt should be of the same order than those of the original image. Therefore, we expect higher correlation coefficients. 
+Both correlations are close to 10\%. If CLIP is working correctly and the image generation model is good as well, the images generated should be of good quality, and thus their adequacy score with the prompt should be of the same order as those of the original image. Therefore, we expect higher correlation coefficients. 
 
 A possible conclusion is that two images can fit well to a prompt while having different CLIP scores, and thus that CLIP is not adapted for fine comparisons of images, and thus neither for fine comparisons of the image generating models. 
 
@@ -721,7 +723,7 @@ A possible conclusion is that two images can fit well to a prompt while having d
 
 Now that we have a (relatively) valid automated judgement mechanism in the form of the CLIP model, we can turn to our core task, namely assessing the capabilities of Dall$\cdot$E sister model, \gls{dallemini}. We start with qualitative, human-made assessments, then we explore the practical effect of generative parameters (the theory of which has been presented in section \ref{sec:inference}), before turning to the suggestion of an automated colour-rendering adequacy test.
 
-\subsubsection{Qualitative exploration of generation capabilities}
+\subsubsection{Qualitative exploration of generation capabilities}\label{subsubsection:qualitativegeneration}
 
 If the generations of \gls{dalle} that can be found on the Open-AI website suggest an exceptional performance, the possibilities of \gls{dallemini} are more limited. In this section, we perform a series of crafted tests (as opposed to automated ones) to explore the model's capabilities. The objectives of this first qualitative observations are to:
 
@@ -751,7 +753,7 @@ We generate a multitude of images based on crafted captions. We start with very 
     \label{tab:prompts}
 \end{table*}
 
-The results are ambivalent, most of the images proposed in the appendix give a glimpse of the (partial) success of the model. The layout of some simple shapes or objects (a cube, a table) the poor management of quantifiers are disappointing.
+The results are ambivalent, most of the images proposed in the appendix give a glimpse of the (partial) success of the model. The layout of some simple shapes or objects (a cube, a table) and the poor management of quantifiers are disappointing.
 However, we are pleasantly surprised by the management of colours and textures, as \gls{dallemini} almost always represents faithfully the requested ones.
 Seemingly innocuous caption changes such as starting your caption with "an image of" is likely to raise the quality of the image produced.
 (This syntactic construction is over-represented in the \gls{dallemini} training dataset, which explains why some apparently longer or more complex captions finally give better results.)
@@ -786,7 +788,7 @@ We experiment on two lines of research:
     \item Vary the values taken by the parameters top-p and top-k independently
 \end{itemize}
 
-The first experiment did not yield interesting results. For different prompts, the output is either totally black, totally white or very strange. We did not found any explanation of this strange behaviour. However, we note that the score of adequacy of a prompt with a white image as given by CLIP could reach up to 21 or 22. Thus, it seems that CLIP does not yield a value of 0 when we, as human, would consider appropriate. \hyperref[sec:greedy-images]{Examples of images obtained through greedy decoding can be found in the appendix using this link}.
+The first experiment did not yield interesting results. For different prompts, the output is either totally black, totally white or very strange. We did not find any explanation for this strange behaviour. However, we note that the score of the adequacy of a prompt with a white image as given by CLIP could reach up to 21 or 22. Thus, it seems that CLIP does not yield a value of 0 when we, as humans, would consider it appropriate. See appendix \ref{app:greedy-images} for examples of images obtained using greedy decoding. 
 
 For the second experiment, we select 3 images from the MS-COCO data set we used earlier, for which we have a prompt and a CLIP score linking the two. We also create manually a prompt for a landscape, as we know the model we use is good at generating such images. The prompts we used are
 \begin{itemize}
@@ -795,9 +797,9 @@ For the second experiment, we select 3 images from the MS-COCO data set we used 
     \item "A young female student performing a downward kick to break a board held by her Karate instructor."
     \item "A sunset over snow-capped mountains" (synthetic prompt)
 \end{itemize}
-We also add "A picture of" at the beginning of each prompt, for we knew it allows to produce slightly better images. The scores of adequacy between the original picture and the new prompt (i.e. "A picture of the man ...") were recalculated, and were, interestingly, slightly different (as compared to the scores of the image with "The man ..."). 
+We also add "A picture of" at the beginning of each prompt, for we knew it allows us to produce slightly better images. The scores of adequacy between the original picture and the new prompt (i.e. "A picture of the man ...") were recalculated, and were, interestingly, slightly different (as compared to the scores of the image with "The man ..."). 
 
-We test 9 sets of parameters. The first is our reference: top-k = 50, top-p = 1.0. We create eight alternative sets by varying one of the two parameters, one at a time. We test the following variations: top-k = [5, 25, 100, 200] and top-p = [0.1, 0.3, 0.7, 0.9]. For each of the 9 set of parameters and for of the each four prompts, we generate 20 images, then score them against their prompt using CLIP. Considering the huge number of generated images, we solely rely on CLIP to analyse the images generated. (Recall that this score is supposed to quantify the adequacy of the original image with its text description.)
+We test 9 sets of parameters. The first is our reference: top-k = 50, top-p = 1.0. We create eight alternative sets by varying one of the two parameters, one at a time. We test the following variations: top-k = [5, 25, 100, 200] and top-p = [0.1, 0.3, 0.7, 0.9]. For each of the 9 sets of parameters and for of the each four prompts, we generate 20 images, then score them against their prompt using CLIP. Considering the huge number of generated images, we solely rely on CLIP to analyse the images generated. (Recall that this score is supposed to quantify the adequacy of the original image with its text description.)
 
 Then, we compare the scores quantitatively using two statistical tests for each caption and set of parameters:
 \begin{itemize}
@@ -807,8 +809,8 @@ Then, we compare the scores quantitatively using two statistical tests for each 
 
 The following figure presents our results for the caption " ”A
 picture of the man with pierced ears is wearing
-glasses and an orange hat.” (see in appendix \ref{sec:other-gen-param} for the figures corresponding to the 3 other prompts). The x-axis refers to the different set of parameters used for generating the images. The grey line indicates the CLIP score of the original image. The black dots are indicating the average CLIP score of the 20 generated images, for each set of parameters. The confidence bounds at 95\% were obtained using the quantiles of the Student distribution with 19 degrees of freedom. 
-Finally, the stars and dots at the top of the picture indicates the result of the different tests. (The black symbols refers to the Student test and the red symbols to the Welch test. One dot indicates significance at 20\%, two dots significance at 10\%, one star at 5\%, two stars at 1\%.)
+glasses and an orange hat.” (see appendix  \ref{app:other-gen-param} for the figures corresponding to the 3 other prompts). The x-axis refers to the different sets of parameters used for generating the images. The grey line indicates the CLIP score of the original image. The black dots are indicating the average CLIP score of the 20 generated images, for each set of parameters. The confidence bounds at 95\% were obtained using the quantiles of the Student distribution with 19 degrees of freedom. 
+Finally, the stars and dots at the top of the picture indicate the result of the different tests. (The black symbols refer to the Student test and the red symbols to the Welch test. One dot indicates significance at 20\%, two dots significance at 10\%, one star at 5\%, two stars at 1\%.)
 
 \begin{figure}[H]
     \centering
@@ -825,15 +827,15 @@ We conclude that varying the value of top-p and top-k has a low impact (the alte
 
 \subsubsection{Colour analysis}
 
-Generative are notably hard to evaluate, the purpose of this section is thus to focus on a specific aspect of the generation, namely the colours.
+Generative is notably hard to evaluate, the purpose of this section is thus to focus on a specific aspect of the generation, namely the colours.
 Indeed, our qualitative assessment tends to show \gls{dallemini} can be pretty good at taking into account colour requests, and automating colour detection and matching was feasible.
-We describe a tool to judge the quality of the generations, that can be used to assess capabilities of text-to-image regarding colours.
+We describe a tool to judge the quality of the generations, that can be used to assess the capabilities of text-to-image regarding colours.
 
-But first let us check whether \gls{dallemini} renders colours in a similar way as what can be find in naturally occurring images.  Are the generated colour distribution similar to what can be found in a dataset, or is the generation biased?
+But first let us check whether \gls{dallemini} renders colours in a similar way as what can be found in naturally occurring images.  Is the generated colour distribution similar to what can be found in a dataset, or is the generation biased?
 
-To test this, we build two groups of images : a set of images from the Flickr dataset and a set of images generated by \gls{dallemini} using the same Flickr captions. We compute the colour histograms for each group of images then plot the difference in histograms colour by colour (RGB) (see figure \ref{fig:histograms}). We visually observe conformity between the two distribution (except for the pixels at the ends). Is this adequacy is confirmed by a goodness-of-fit test?
+To test this, we build two groups of images : a set of images from the Flickr dataset and a set of images generated by \gls{dallemini} using the same Flickr captions. We compute the colour histograms for each group of images and then plot the difference in histograms colour by colour (RGB) (see figure \ref{fig:histograms}). We visually observe conformity between the two distributions (except for the pixels at the ends). Is this adequacy confirmed by a goodness-of-fit test?
 
-After performing a Kolmogorov–Smirnov test on each distribution, the null hypothesis is rejected well below the usual thresholds for the red and blue colours. Only the green distribution is rejected at the 3\% threshold. This allows us to conclude that even though the colour distribution are not that different, a slight bias still remains in \gls{dallemini} generations.
+After performing a Kolmogorov–Smirnov test on each distribution, the null hypothesis is rejected well below the usual thresholds for the red and blue colours. Only the green distribution is rejected at the 3\% threshold. This allows us to conclude that even though the colour distribution is not that different, a slight bias still remains in \gls{dallemini} generations.
 
 We are now ready to introduce our colour recognition tool adapted to our needs to try to understand how good \gls{dallemini} was at drawing the colours requested in the captions. We look at different situations to evaluate the performance of \gls{dallemini}. %  to then compare them to our own model % we do not do that at the end
 
@@ -857,13 +859,13 @@ We obtain the following dataframe:
 The results are ambivalent, as they are very dependent on the requested color in multiple ways: 
 
 \begin{itemize}
-    \item Some colors are present by default in any given image (white, black and grey given the permissive treshold).
+    \item Some colors are present by default in any given image (white, black and grey given the permissive threshold).
     \item The global presence score must be treated carefully, as the images requested may influence it even though no color is explicitly required (some captions mentioned the sea, therefore the blue in very present on its own in the previous results table).
-    \item Some colors seem to be more represented in the training dataset and thus are more likely to be found in any given image. (When asking for the image of a ball, even though it apparently suggests no color, in addition to white and black, green and yellow over over represented. This could be explained by the presence of many green landscapes in the dataset).
+    \item Some colors seem to be more represented in the training dataset and thus are more likely to be found in any given image. (When asking for the image of a ball, even though it apparently suggests no color, in addition to white and black, green and yellow over overrepresented. This could be explained by the presence of many green landscapes in the dataset).
     \item Apart from the two important parameters for calibrating the color detection tool, it is also necessary to choose the requested color (in RGB) with care. If we ask for a color that is too bright, the conversion to LAB may produce detection results different from what a human would have identified. It is therefore necessary to choose carefully the coding of the requested colors.
 \end{itemize}  
 
-Although with significant variability depending on the choice of color (in rgb coding), we conclude that mini dallE is able to understand the color instructions, but fails to be consistent. Indeed if the presence percentage improves, a qualitative look at the whole images generated show that either \gls{dallemini} draws it or it does not care at all. However, using this tool to filter multiple generations of the same caption is just a good way to improve the model generation, this tool could complement CLIP to score and rank the images generated from a single caption to find the best to show.
+Although with significant variability depending on the choice of color (in rgb coding), we conclude that mini dallE is able to understand the color instructions, but fails to be consistent. Indeed if the presence percentage improves, a qualitative look at the whole images generated shows that either \gls{dallemini} draws it or it does not care at all. However, using this tool to filter multiple generations of the same caption is just a good way to improve the model generation, this tool could complement CLIP to score and rank the images generated from a single caption to find the best to show.
 
 \end{multicols}
 
@@ -871,7 +873,7 @@ Although with significant variability depending on the choice of color (in rgb c
 
 \begin{multicols}{2}
 
-In this section, we build our own implementation of \gls{dalle}, dubbed \gls{dalletiny}. Code is located on \href{https://github.com/cthiounn/dalle-tiny}{Github}. In order to reproduce DALLE's functionalities, the first step before implementing is to link the initial paper to the different already available implementations, most notably Boris Dayma's \gls{dallemini} (and more anecdotally Lucidrains' Dall$\cdot$ Pytorch). Then, we pick an image-caption dataset, a \gls{vae} and an autoregressive distribution families. Finally, we train and test our model.
+In this section, we build our own implementation of \gls{dalle}, dubbed \gls{dalletiny}. Code is located on \href{https://github.com/cthiounn/dalle-tiny}{Github}. In order to reproduce DALLE's functionalities, the first step before implementing is to link the initial paper to the different already available implementations, most notably Boris Dayma's \gls{dallemini} (and more anecdotally Lucidrains' Dall$\cdot$ Pytorch). Then, we pick an image-caption dataset, a \gls{vae} and an autoregressive distribution family. Finally, we train and test our model.
 
 \subsection{Methodology}
 
@@ -886,7 +888,7 @@ For each experimentation, we follow the same methodology in ten steps :
     \item Select a seq2seq/transformer model and adapt its decoder (indeed, with both a small dataset and relatively limited computing power, we are not able to train a transformer with billions of parameters from scratch ; instead, we prefer to "fine-tune" preset existing transformer models)
     \item Implement a training loop
     \item Perform a manual hyperparameters search
-    \item Launch with a chosen set of hyperparameters and save the model at a regular time frequency
+    \item Launch with a chosen set of hyperparameters and save the model at a regular time-frequency
     \item Implement an inference code using a caption, the model and the dVAE's decoder
 \end{enumerate}
 
@@ -894,7 +896,7 @@ For each experimentation, we follow the same methodology in ten steps :
 
 \subsubsection{Dataset selection}
 
-Since in section \textcolor{red}{REF}, \gls{dallemini} showed good results for landscapes, we decide to focus on landscapes examples. We start with the entire MSCOCO 2017 dataset, filter specific keywords of landscape, such as "mountain", "sea" in all captions, and exclude keywords of individuals, such as human and animal related-keywords. Since in the dataset, each image has a set of five captions, we pick the first of the five. Finally, we extract a landscape-related dataset of 12,134 train images and 506 test images from a starting size of respectively 118,287 and 5,000.
+Since in section \ref{subsubsection:qualitativegeneration}, \gls{dallemini} showed good results for landscapes, we decide to focus on landscapes examples. We start with the entire MSCOCO 2017 dataset, filter specific keywords of landscape, such as "mountain", "sea" in all captions, and exclude keywords of individuals, such as human and animal related-keywords. Since in the dataset, each image has a set of five captions, we pick the first of the five. Finally, we extract a landscape-related dataset of 12,134 train images and 506 test images from a starting size of respectively 118,287 and 5,000.
 
 \subsubsection{dVAE model selection}
 
@@ -905,28 +907,28 @@ Like \gls{dallemini}, we start from Huggingface's implementation of BartModel, s
 
 \subsubsection{Data preprocessing}
 
-Before the training phase, we preprocess data so that an image-caption pair is turned into a pair of a sequence of text tokens and (compressed) image tokens. Since the operation is the same for each step of the training phase, we choose to pre-process the texts and images beforehand to speed up the training process subsequently. Simlarly to \gls{dalle}, we resize and center-crop\footnote{the center-cropping operation may induce loss of information and can mismatch the cropped image with the caption if there are items at the border} the images to fit into a 256*256 pixel box.
+Before the training phase, we preprocess data so that an image-caption pair is turned into a pair of a sequence of text tokens and (compressed) image tokens. Since the operation is the same for each step of the training phase, we choose to pre-process the texts and images beforehand to speed up the training process subsequently. Similarly to \gls{dalle}, we resize and center-crop\footnote{the center-cropping operation may induce loss of information and can mismatch the cropped image with the caption if there are items at the border} the images to fit into a 256*256 pixel box.
 
 \subsubsection{Auto-regressive modelling}
 
 We begin from the last checkpoint of BartModel and we reset its decoder in order to adapt the output of the Seq2Seq/transformer. BartModel usually ingests text tokens and outputs text tokens. Therefore, the decoder part must be transformed to output image tokens. To do so, we change the decoder configuration and the layer of the inner neural network in order to match the size of the image vocabulary. Since modelling image tokens is a new task for BartModel, we also reset the weights of all layers of the decoder.
 
-Furthermore, BartModel comes pretrained (with learned parameters) incorporating general knowledge of natural language processing that would be unfortunate to lose. So we decide to freeze the encoder part (that should embed a an "understanding" of the English language, to some compact encoding) while fine-tuning the decoder weights. This is intended to improve learning abilities on a relatively small dataset as ours, since there are fewer parameters to modify.
+Furthermore, BartModel comes pretrained (with learned parameters) incorporating general knowledge of natural language processing that would be unfortunate to lose. So we decide to freeze the encoder part (that should embed an "understanding" of the English language, to some compact encoding) while fine-tuning the decoder weights. This is intended to improve learning abilities on a relatively small dataset like ours, since there are fewer parameters to modify.
 
 \subsubsection{Training loop design, hyperparameters search and training phase}
 
-Next, we fine-tune our seq2seq model with the training dataset and evaluate it with the testing dataset, through many steps and epochs. (One step is one optimisation step, only limited by the memory capacity of the computers we work on, usually few images at a time. One epoch is a complete loop over the training set.) The training loop operates with data parallelism and can use multiple GPUs to compute the prediction of the model. For this computation, the model uses the $256$ image tokens as the target and the 255 text tokens and the $256-1=255$ image tokens as the input of the prediction.
+Next, we fine-tune our seq2seq model with the training dataset and evaluate it with the testing dataset, through many steps and epochs. (One step is one optimisation step, only limited by the memory capacity of the computers we work on, usually a few images at a time. One epoch is a complete loop over the training set.) The training loop operates with data parallelism and can use multiple GPUs to compute the prediction of the model. For this computation, the model uses the $256$ image tokens as the target and the 255 text tokens and the $256-1=255$ image tokens as the input of the prediction.
 Afterwards, both losses and back-propagation corrections are computed. In order to do so, the loss function is the cross-entropy function which computes the "distance" between a target sequence and a predicted sequence. Since there are many ways to back-propagate, a strategy with the optimiser AdamW with a decay of the learning rate has been implemented.
 Deep learning metrics, such as the mean loss on the testing dataset and the mean loss on a small batch of training dataset are frequently sent to \href{https://wandb.ai/cthiounn/dalle-tiny}{WandB} in order to track different runs and to do a hyper-parameters search.
-We perform a manual hyper-parameters search for choosing the most favourable learning rate and enventually pick a rate around $5\times 10^5$ (with AdamW).
+We perform a manual hyper-parameters search for choosing the most favourable learning rate and eventually pick a rate around $5\times 10^5$ (with AdamW).
 
 We use \href{https://datalab.sspcloud.fr/}{Onyxia datalab}'s resources to perform the training. The datalab offers fastAI instances with S3 storage and 1-3 GPUs per instance. Most of the runs are using at least 2 GPUs to speed up the training and to fit a larger batch size into the GPUs. An accumulated gradient strategy has been made steadily on the last runs.
 
-To avoid over-fitting the training dataset, we stop the training when the mean loss on the testing dataset has reached its lowest point and save the model weights and configuration.
+To avoid overfitting the training dataset, we stop the training when the mean loss on the testing dataset has reached its lowest point and save the model weights and configuration.
 
 \subsubsection{Inference phase}
 
-We load the adequate trained-model checkpoint and feed a caption into the text tokeniser and then into the model. The trained model generates a new sequence of image tokens, according to parameters such as top-k, top-p (see section \ref{sec:inference}). Subsequently, the sequence of image tokens is sent into the dVAE's decoder and is translated into a new image.
+We load the adequately trained-model checkpoint and feed a caption into the text tokeniser and then into the model. The trained model generates a new sequence of image tokens, according to parameters such as top-k, top-p (see section \ref{sec:inference}). Subsequently, the sequence of image tokens is sent into the dVAE's decoder and is translated into a new image.
 
 \subsection{Other experimentations}
 
@@ -941,14 +943,14 @@ An accumulated gradient strategy is used to avoid correcting the gradient too he
 
 \subsubsection{To freeze or not to freeze the encoder ?}
 
-\citeauthor{Thompson_2018}'s article suggests that freezing a sub-network of the model has no significant effects on its performance with continued training. \cite{https://doi.org/10.48550/arxiv.2103.05247} show that fine-tuning only the output layer results in over-fitting and degrading significantly the performance. Also, freezing self-attention and feed-forward layers do not degrade the model performance.
+\citeauthor{Thompson_2018}'s article suggests that freezing a sub-network of the model has no significant effects on its performance with continued training. \cite{https://doi.org/10.48550/arxiv.2103.05247} show that fine-tuning only the output layer results in overfitting and degrading significantly the performance. Also, freezing self-attention and feed-forward layers do not degrade the model performance.
 The upside of freezing a sub-network of a model is to compute fewer gradients, and to fit more data into the GPUs, resulting in faster computation and training.
 
 \subsection{Tinydalle's results}\label{subsec:tinydalle_results}
 
 \subsubsection{Main results}
 
-We fail to reproduce \gls{dalle}'s functionalities with both the landscape dataset and the complete MSCOCO 2017 dataset. We do succeed in generating new images. However, they are not related to the proposed caption. In the training phase, average test losses initially decrease during a short period of training, then start to increase. That increase means that the model is over-fitting the training dataset. The model with the lesser average test loss generates color-uniform images, whereas the model with a later checkpoint generates a well-composed image. However, they are unrelated to the submitted caption.
+We fail to reproduce \gls{dalle}'s functionalities with both the landscape dataset and the complete 2017 MSCOCO dataset. We do succeed in generating new images. However, they are not related to the proposed caption. In the training phase, average test losses initially decrease during a short period of training, then start to increase. That increase means that the model is overfitting the training dataset. The model with the lesser average test loss generates color-uniform images, whereas the model with a later checkpoint generates a well-composed image. However, they are unrelated to the submitted caption.
 
 \subsubsection{Other results}
 
@@ -1113,6 +1115,23 @@ At the end, the estimation (optimisation) procedure performed by \cite{zeroshot}
 
 \end{multicols}
 
+\section{More on CLIP} \label{app:more-CLIP}
+
+CLIP stands for "Constrastive Language Pre-Training." This model is a neural network that was developed in order to associate to an image the best description among several possibilities. The goal of this model is to be able to achieve this association in a non-specific way (zero-shot learning), unlike neural networks trained for recognition in a particular field. In order to be as generalist as possible, the model was trained on 400 millions of image-text pairs. 
+
+The input of the model is not exactly a set of images and texts. Instead, the text is going through a text encoder and the images are passing through an image encoder. The vectors in the condensed space (or embedding space) obtained after this are integrated in matrix, with all the vectors for each piece of text and each image.
+
+At training time, the model receives NxN images-texts pairs (in the matrix described before) of which there are Nx1 correct pairs and Nx(N-1) incorrect pairs. Its goal is to maximise a measure of similarity between the correct pairs and to minimise that of the incorrect pairs. 
+
+This learning of the notion of similarity allows to make accurate predictions on data outside of the training data. The quality of the encoders is then primordial, for they determine the vector representation of each piece of text and image. Thus, we can say that the quality of the model relies largely on that of the condensed space. 
+
+At inference time, we give CLIP a set of texts and an image, and CLIP computes the similarity scores given the data provided by the encoders and the training weights of the model. The similarities obtained can be normalised in order to have a distribution of probabilities over the possible texts. The piece of text that receives the best score is considered to be the prediction of the model. It is important to note that the way the text are presented to CLIP has an importance: we can obtain better results by integrating the names of the different categories in a sentence. For example, given we want to predict of animal on a picture, it is better to propose as descriptions "a photo of cat/dog/elephant" instead of only using the name of the animal as a category. 
+
+CLIP can be used for other tasks than classification: it is possible not to normalise the scores of similarity and instead to use the raw score corresponding to the scalar product of the embedding. 
+
+The authors of the model note that despite the generality of the model, its performances remain of poor quality on data radically different from the training ones. Thus, CLIP does not really resolve the lack of generalisation abilities of this type of model, but gets around it using a generalist type of learning and a large volume of data. 
+\textcolor{red}{section ayant disparu}
+
 \section{Empirical results}
 
 \subsection{CLIP}
@@ -1273,7 +1292,7 @@ At the end, the estimation (optimisation) procedure performed by \cite{zeroshot}
 \end{figure}
 
 \subsection{Example of strange images obtained through greedy decoding}
-\label{sec:greedy-images}
+\label{app:greedy-images}
 
 These two figures present images we obtained using greedy decoding with multiple beams. Other outputs were simply fully blank or black. We were not able to find an explanation for this strange behavior. 
 
@@ -1292,7 +1311,7 @@ These two figures present images we obtained using greedy decoding with multiple
 \end{figure}
 
 \subsection{Study of parameter's impact on generated images}
-\label{sec:other-gen-param}
+\label{app:other-gen-param}
 
 The 3 next figures are presenting the results of variations in the parameters of generation for 3 different prompts.
 
