@@ -670,7 +670,7 @@ The capabilities of text-to-image may be impressive at first sight, but as state
 
 \subsection{CLIP}
 
-The reader might remember from earlier sections that CLIP is a model which takes an image-caption pair as input and computes an adequacy score between them. The (absolute) scores range on an unbounded scale where higher scores mean higher adequacy. When dealing with several images, absolute scores can then be rescaled to (relative) probability scores. But how reliable are these scores? We find that overall CLIP agrees with human judgement but that \textcolor{red}{CONCLUSION 2ND SECTION}.
+The reader might remember from earlier sections that CLIP is a model which takes an image-caption pair as input and computes an adequacy score between them. The (absolute) scores range on an unbounded scale where higher scores mean higher adequacy. When dealing with several images, absolute scores can then be rescaled to (relative) probability scores. But how reliable are these scores? We will test CLIP adequacy with human judgement, but also get a more quantitative look by seeing what CLIP produces when scoring datasets of different qualities and assess its sensitivity to small changes in image quality. \textcolor{red}
 
 \subsubsection{CLIP and humans agree on text-image adequacy}
 
@@ -680,13 +680,13 @@ The reader might remember from earlier sections that CLIP is a model which takes
 
 To test our confidence in CLIP, the following experiment is performed to determine if CLIP and humans tend to make the same choice when presented with different captions: 
 \begin{itemize}
-  \item Selection of 100 random images from the COCO dataset
+  \item Selection of 100 random images from the COCO dataset.
   \item Writing of 3 descriptive captions: one caption from the dataset, the other two chosen by us (from very adequate to not at all).
   \item Notation of the correspondence between the image and the sentences chosen by each human.
   \item Comparison with the adequacy score established by CLIP.
 \end{itemize}
 
-The results can be found in figure \ref{fig:Humans vs CLIP}, they show that on most caption/image pairing, CLIP and humans agree on the score to give. All good captions for CLIP are considered good by humans. However, the limitation of the experiment is that some captions are so accurate that the probability score is very close to 1 for CLIP, causing other captions that are relatively good from a human perspective to score close to 0, which gives a messy column for this specific score.
+The results can be found in the appendices, figure \ref{fig:Humans vs CLIP}, they show that on most caption/image pairing, CLIP and humans agree on the score to give. All good captions for CLIP are considered good by humans. However, the limitation of the experiment is that some captions are so accurate that the probability score is very close to 1 for CLIP, causing other captions that are relatively good from a human perspective to score close to 0, which gives a messy column for this specific score.
 
 \subsubsection{Inquiries on CLIP using Flickr's test set}
 
@@ -706,7 +706,7 @@ We obtain:
 
 The value of these scores (in absolute value) does not represent anything, but shows the magnitude of CLIP's criticism of the generated images.
 
-Using these scores, it seems that CLIP behaves like a good classifier of generated image vs real image. If presented with a caption and two images (one real, one generated), CLIP can place each image in the correct group with an accuracy of 96.3\% only by comparing the two images scores.
+Using these scores, it seems that CLIP behaves like a good classifier of generated image vs real image. If presented with a caption and two images (one real, one generated), CLIP can determine which one is real and which one is generated with an accuracy of 96.3\% only by comparing the two images scores.
 
 Now is that a success of CLIP or a failure of \gls{dallemini}?
 
@@ -762,9 +762,9 @@ This significant influence of the training dataset makes us reconsider the possi
 Thus we shift focus from simple shapes to more complex topics based on what exists in the training set.
 So we launch a new generation series from more complex texts with the following prerequisites:
 \begin{itemize}
-    \item Important use of 'a picture of' or 'a photo of'
-    \item Generation of landscapes or particular elements present in the dataset (baseball games for some reason)
-    \item Building captions containing several instructions to evaluate the performance of dallE to treat every information required
+    \item Important use of 'a picture of' or 'a photo of'.
+    \item Generation of particular landscapes or features that are prominent in the dataset (baseball games for unknown reasons).
+    \item Building captions containing several instructions to evaluate the performance of \gls{dalle} to treat every information required.
 \end{itemize}
 
 Some of the results are shown in figure \ref{fig:complex_generations}
@@ -777,15 +777,15 @@ So far, we have not spoken of the different options of generations we presented 
 
 The standard parameters in the implementation we use are:
 \begin{itemize}
-    \item \textit{do\_sample = True} so we are sampling in the distribution and not using greedy decoding
-    \item \textit{top-k = 50}
-    \item \textit{top-p = 1.0}
+    \item \textit{do\_sample = True} so we are sampling in the distribution and not using greedy decoding.
+    \item \textit{top-k = 50}.
+    \item \textit{top-p = 1.0}.
 \end{itemize}
 
 We experiment on two lines of research:
 \begin{itemize}
-    \item Setting \textbf{do\_sample = False} in order to use greedy decoding, using different number of beams
-    \item Vary the values taken by the parameters top-p and top-k independently
+    \item Setting \textbf{do\_sample = False} in order to use greedy decoding, using different number of beams.
+    \item Vary the values taken by the parameters top-p and top-k independently.
 \end{itemize}
 
 The first experiment did not yield interesting results. For different prompts, the output is either totally black, totally white or very strange. We did not find any explanation for this strange behaviour. However, we note that the score of the adequacy of a prompt with a white image as given by CLIP could reach up to 21 or 22. Thus, it seems that CLIP does not yield a value of 0 when we, as humans, would consider it appropriate. See appendix \ref{app:greedy-images} for examples of images obtained using greedy decoding. 
@@ -795,7 +795,7 @@ For the second experiment, we select 3 images from the MS-COCO data set we used 
     \item "The man with pierced ears is wearing glasses and an orange hat."
     \item "A black and white dog is running in a grassy garden surrounded by a white fence."
     \item "A young female student performing a downward kick to break a board held by her Karate instructor."
-    \item "A sunset over snow-capped mountains" (synthetic prompt)
+    \item "A sunset over snow-capped mountains" (synthetic prompt).
 \end{itemize}
 We also add "A picture of" at the beginning of each prompt, for we knew it allows us to produce slightly better images. The scores of adequacy between the original picture and the new prompt (i.e. "A picture of the man ...") were recalculated, and were, interestingly, slightly different (as compared to the scores of the image with "The man ..."). 
 
@@ -804,10 +804,10 @@ We test 9 sets of parameters. The first is our reference: top-k = 50, top-p = 1.
 Then, we compare the scores quantitatively using two statistical tests for each caption and set of parameters:
 \begin{itemize}
     \item \textbf{Comparison with the CLIP score of the original image (gold score)}. A Student test is performed to assess whether the average CLIP score of the 20 generated images is different from the CLIP score of the original image.
-    \item \textbf{Comparison with the standard set of parameters}. A Welch test (Student test not assuming equality of variance) is used to assess whether the average CLIP score of the 20 generated images is different from the same average, but over 20 images generated from the standard set of parameters
+    \item \textbf{Comparison with the standard set of parameters}. A Welch test (Student test not assuming equality of variance) is used to assess whether the average CLIP score of the 20 generated images is different from the same average, but over 20 images generated from the standard set of parameters.
 \end{itemize}
 
-The following figure presents our results for the caption " ”A
+The following figure presents our results for the caption "A
 picture of the man with pierced ears is wearing
 glasses and an orange hat.” (see appendix  \ref{app:other-gen-param} for the figures corresponding to the 3 other prompts). The x-axis refers to the different sets of parameters used for generating the images. The grey line indicates the CLIP score of the original image. The black dots are indicating the average CLIP score of the 20 generated images, for each set of parameters. The confidence bounds at 95\% were obtained using the quantiles of the Student distribution with 19 degrees of freedom. 
 Finally, the stars and dots at the top of the picture indicate the result of the different tests. (The black symbols refer to the Student test and the red symbols to the Welch test. One dot indicates significance at 20\%, two dots significance at 10\%, one star at 5\%, two stars at 1\%.)
@@ -833,9 +833,9 @@ We describe a tool to judge the quality of the generations, that can be used to 
 
 But first let us check whether \gls{dallemini} renders colours in a similar way as what can be found in naturally occurring images.  Is the generated colour distribution similar to what can be found in a dataset, or is the generation biased?
 
-To test this, we build two groups of images : a set of images from the Flickr dataset and a set of images generated by \gls{dallemini} using the same Flickr captions. We compute the colour histograms for each group of images and then plot the difference in histograms colour by colour (RGB) (see figure \ref{fig:histograms}). We visually observe conformity between the two distributions (except for the pixels at the ends). Is this adequacy confirmed by a goodness-of-fit test?
+To test this, we build two groups of images: a set of images from the Flickr dataset and a set of images generated by \gls{dallemini} using the same Flickr captions. We compute the colour histograms for each group of images and then plot the difference in histograms colour by colour (RGB) (see figure \ref{fig:histograms}). We visually observe conformity between the two distributions (except for the pixels at the ends). Is this adequacy confirmed by a goodness-of-fit test?
 
-After performing a Kolmogorov–Smirnov test on each distribution, the null hypothesis is rejected well below the usual thresholds for the red and blue colours. Only the green distribution is rejected at the 3\% threshold. This allows us to conclude that even though the colour distribution is not that different, a slight bias still remains in \gls{dallemini} generations.
+After performing a Kolmogorov–Smirnov test on each sample, the null hypothesis (being that the two distributions are the same) is rejected well below the usual thresholds for the red and blue colours. Only the green distribution is rejected at the 3\% threshold. This allows us to conclude that even though the colour distribution is not that different, a slight bias still remains in \gls{dallemini} generations.
 
 We are now ready to introduce our colour recognition tool adapted to our needs to try to understand how good \gls{dallemini} was at drawing the colours requested in the captions. We look at different situations to evaluate the performance of \gls{dallemini}. %  to then compare them to our own model % we do not do that at the end
 
@@ -852,7 +852,7 @@ We obtain the following dataframe:
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{df_color.png}
-    \caption{The results of our color analysis generation global presence represents the control group with no colors asked"}
+    \caption{The results of our color analysis generation global presence represents the control group with no colors asked}
     \label{fig:df_color}
 \end{figure}
 
@@ -865,7 +865,7 @@ The results are ambivalent, as they are very dependent on the requested color in
     \item Apart from the two important parameters for calibrating the color detection tool, it is also necessary to choose the requested color (in RGB) with care. If we ask for a color that is too bright, the conversion to LAB may produce detection results different from what a human would have identified. It is therefore necessary to choose carefully the coding of the requested colors.
 \end{itemize}  
 
-Although with significant variability depending on the choice of color (in rgb coding), we conclude that mini dallE is able to understand the color instructions, but fails to be consistent. Indeed if the presence percentage improves, a qualitative look at the whole images generated shows that either \gls{dallemini} draws it or it does not care at all. However, using this tool to filter multiple generations of the same caption is just a good way to improve the model generation, this tool could complement CLIP to score and rank the images generated from a single caption to find the best to show.
+Although with significant variability depending on the choice of color (in rgb coding), we conclude that \gls{dallemini} is able to understand the color instructions, but fails to be consistent. Indeed if the presence percentage improves, a qualitative look at the whole images generated shows that either \gls{dallemini} draws it or it does not care at all. However, using this tool to filter multiple generations of the same caption is just a good way to improve the model generation, this tool could complement CLIP to score and rank the images generated from a single caption to find the best to show.
 
 \end{multicols}
 
@@ -892,11 +892,11 @@ For each experimentation, we follow the same methodology in ten steps :
     \item Implement an inference code using a caption, the model and the dVAE's decoder
 \end{enumerate}
 
-\subsection{Tinydalle implementation on landscapes of MSCOCO 2017 dataset}
+\subsection{Tinydalle implementation on landscapes of 2017 MSCOCO dataset}
 
 \subsubsection{Dataset selection}
 
-Since in section \ref{subsubsection:qualitativegeneration}, \gls{dallemini} showed good results for landscapes, we decide to focus on landscapes examples. We start with the entire MSCOCO 2017 dataset, filter specific keywords of landscape, such as "mountain", "sea" in all captions, and exclude keywords of individuals, such as human and animal related-keywords. Since in the dataset, each image has a set of five captions, we pick the first of the five. Finally, we extract a landscape-related dataset of 12,134 train images and 506 test images from a starting size of respectively 118,287 and 5,000.
+Since in section \ref{subsubsection:qualitativegeneration}, \gls{dallemini} showed good results for landscapes, we decide to focus on landscapes examples. We start with the entire 2017 MSCOCO dataset, filter specific keywords of landscape, such as "mountain", "sea" in all captions, and exclude keywords of individuals, such as human and animal related-keywords. Since in the dataset, each image has a set of five captions, we pick the first of the five. Finally, we extract a landscape-related dataset of 12,134 train images and 506 test images from a starting size of respectively 118,287 and 5,000.
 
 \subsubsection{dVAE model selection}
 
@@ -932,9 +932,9 @@ We load the adequately trained-model checkpoint and feed a caption into the text
 
 \subsection{Other experimentations}
 
-\subsubsection{Tinydalle implementation on all MSCOCO 2017 dataset}
+\subsubsection{Tinydalle implementation on all 2017 MSCOCO dataset}
 
-In this second experimentation, we use the entire MSCOCO 2017 dataset instead of extracting landscapes. Furthermore, we decide to keep all the captions, since a picture can be described in many ways in the natural language. Thus, the training dataset's and the testing dataset's sizes are respectively $118,287\times 5$ and $5,000 \times 5$.
+In this second experimentation, we use the entire 2017 MSCOCO dataset instead of extracting landscapes. Furthermore, we decide to keep all the captions, since a picture can be described in many ways in the natural language. Thus, the training dataset's and the testing dataset's sizes are respectively $118,287\times 5$ and $5,000 \times 5$.
 Since only the dataset selection has changed, the other parts remain unchanged. We keep our implementation but with a bigger and more generic dataset.
 
 \subsubsection{Accumulated gradient strategy}
