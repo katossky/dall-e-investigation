@@ -79,14 +79,14 @@
 \newacronym{ml}{ML}{Machine-Learning}
 \newacronym{mle}{MLE}{Maximum Likelihood Estimation}
 \newacronym{elbo}{ELBO}{Evidence Lower-Bound}
+\newacronym{gpu}{GPU}{Graphics Processing Unit}
 
 
 % Arthur: I comment all abbreviations that are not used
 % \item DL: Deep Learning 
 % \item NN: Neural Network 
 % \item RNN: Recurrent Neural Network 
-% \item dVAE / VQ-VAE: Vector-Quantised Variational Auto-Encoder
-% \item NLP: Natural Language Processing
+% \item VQ-VAE: Vector-Quantised Variational Auto-Encoder
 %\item GAN: Generative Adversarial Network
 %\item NMT: Natural Machine Translation
 %\item LSTM: Long-Short Term Memory
@@ -937,12 +937,12 @@ Furthermore, BartModel comes pretrained (with learned parameters) incorporating 
 
 \subsubsection{Training loop design, hyperparameters search and training phase}
 
-Next, we fine-tune our seq2seq model with the training dataset and evaluate it with the testing dataset, through many steps and epochs. (One step is one optimisation step, only limited by the memory capacity of the computers we work on, usually a few images at a time. One epoch is a complete loop over the training set.) The training loop operates with data parallelism and can use multiple GPUs to compute the prediction of the model. For this computation, the model uses the $256$ image tokens as the target; and the 255 text tokens and the $256-1=255$ image tokens as the input of the prediction.
+Next, we fine-tune our seq2seq model with the training dataset and evaluate it with the testing dataset, through many steps and epochs. (One step is one optimisation step, only limited by the memory capacity of the computers we work on, usually a few images at a time. One epoch is a complete loop over the training set.) The training loop operates with data parallelism and can use multiple \acrshort{gpu}s to compute the prediction of the model. For this computation, the model uses the $256$ image tokens as the target, and the 255 text tokens and the $256-1=255$ image tokens as the input of the prediction.
 Afterwards, both losses and back-propagation corrections are computed. In order to do so, the loss function is the cross-entropy function which computes the "distance" between a target sequence and a predicted sequence. Since there are many ways to back-propagate, a strategy with the optimiser AdamW with a decay of the learning rate has been implemented.
 Deep learning metrics, such as the mean loss on the testing dataset and the mean loss on a small batch of training dataset are frequently sent to \href{https://wandb.ai/cthiounn/dalle-tiny}{WandB} in order to track different runs and to do a hyper-parameters search.
 We perform a manual hyper-parameters search for choosing the most favourable learning rate and eventually pick a rate around $5\times 10^5$ (with AdamW).
 
-We use \href{https://datalab.sspcloud.fr/}{Onyxia datalab}'s resources to perform the training. The datalab offers fastAI instances with S3 storage and 1-3 GPUs per instance. Most of the runs are using at least 2 GPUs to speed up the training and to fit a larger batch size into the GPUs. An accumulated gradient strategy has been made steadily on the last runs.
+We use \href{https://datalab.sspcloud.fr/}{Onyxia datalab}'s resources to perform the training. The datalab offers fastAI instances with S3 storage and 1-3 \acrshort{gpu}s per instance. Most of the runs are using at least 2 \acrshort{gpu}s to speed up the training and to fit a larger batch size into the \acrshort{gpu}s. An accumulated gradient strategy has been made steadily on the last runs.
 
 To avoid overfitting the training dataset, we stop the training when the mean loss on the testing dataset has reached its lowest point and save the model weights and configuration.
 
