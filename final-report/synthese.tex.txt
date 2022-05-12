@@ -78,50 +78,106 @@ Conducted under the supervision of Benjamin Muller and Matthieu Futeral-Peter (I
 
 Within the broad field of Machine Learning, the text-to-image field aims at building models able to generate compelling images based on a text description. This report synthesises our study of one of those models \gls{dalle}, which was developed by OpenAI. 
 
-This model is made of two fundamental bricks,  the Variational Auto-Encoder (VAE) and the transformer. Because classical pictures are too high-dimensional, the first brick is used to compress the images into a smaller space in which they are represented as a set of metapixels called tokens. The second one models the relationship between the text and the image tokens. It is able to recursively generate a sequence of image tokens based on a text prompt.
+This model is made of two fundamental bricks,  the Variational Auto-Encoder (VAE) and the transformer. Because classical pictures are too high-dimensional, the first brick is used to compress the images into a smaller space in which they are represented as a set of metapixels called tokens; the goal being to preserve most of the information of the image despite the lower dimension. The second one models the relationship between the text and the image tokens. It is able to recursively generate a sequence of image tokens based on a text prompt. Given a prompt, it produces one pixel of an image, and then produces a second pixel taking into account the prompt and the previous pixel, and so on until an image is completed.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.6]{a lamp in the shape of an orchid.png}
+    \caption{A lamp in the shape of an orchid by DALL.E}
+    \label{fig:lamp}
+\end{figure}
 
-\Gls{dalle} is not fully available to the public. Therefore, we relied on \gls{dallemini}, an open-source implementation that tries to reproduce the results obtained by \gls{dalle}.
+\Gls{dalle} is not fully available to the public. Therefore, we relied on \gls{dallemini}, an open-source implementation that tries to reproduce the results obtained by \gls{dalle}. The model architecture is not exactly the same, but the goal remains untouched, with results that we explore in our report, although it is agreed that the lower size of the model implies less impressive generations.
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\textwidth}color
+    \includegraphics[width=.4\linewidth]{a picture of a yellow park.jpeg}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+    \includegraphics[width=.4\linewidth]{a photo of a bedroom.jpeg}
+    \end{subfigure}
+    \caption{Images produced by mini DALL.E : A picture of a yellow park, A photo of a bedroom}
+    \label{fig:mini_dallE_exemples}
+\end{figure}
 
-One of the challenges in training models capable of generating images is to evaluate the quality of their outputs. How can one quantify the adequacy of an image with a text description ? To deal with this issue, we rely on another model developed by OpenAI, CLIP  \footnote{CLIP stands for Constrastive Language Pre-Training.}. CLIP is capable of giving an adequacy score for an image-text pair (absolute number). If we want to find the best text description for a given image, the absolute scores can be turned into a distribution of probability, using a \textcolor{red}{softmax function (si je ne me trompe pas ?}.
+One of the challenges in training models capable of generating images is to evaluate the quality of their outputs. How can one quantify the adequacy of an image with a text description? To deal with this issue, we rely on another model developed by OpenAI, CLIP  \footnote{CLIP stands for Contrastive Language Pre-Training.}. CLIP is capable of giving an adequacy score for an image-text pair (absolute number). If we want to find the best text description for a given image, the absolute scores can be turned into a distribution of probability, using a \textcolor{red}{softmax function (si je ne me trompe pas ?}.
 
-This document is a synthesis of a longer report. Here, we present our evaluation of CLIP and of the generating capabilities of \gls{dallemini}. Then, we explain how we tried to create our small version of \gls{dalle} and show the obtained results. For more details, especially on the mathematics and technical background of \gls{dalle}, please refer to our complete report. 
+This document is a synthesis of a longer report. Here, we present our evaluation of CLIP and the generating capabilities of \gls{dallemini}. Then, we explain how we tried to create our small version of \gls{dalle} and show the obtained results. For more details, especially on the mathematics and technical background of \gls{dalle}, please refer to our complete report. 
 
 \end{multicols}
 
-\textcolor{red}{Je n'ai pour l'instant pas inclus de partie background théorique}
-
-
-\section{Models capabilities}
+\section{Models' capabilities}
 
 \begin{multicols}{2}
 
 \subsection{CLIP's evaluation}
 
-Because we largely rely on CLIP for estimating the quality of the output images, we started by assessing whether this model was functioning properly. 
+After taking a human look at the images generated, we aimed to rely on CLIP for estimating the quality of the output images to make more quantitative analysis of \gls{dallemini} using several image datasets. Therefore we started by assessing whether this model was functioning properly. 
 
-Firstly, we use CLIP on the Flickr test set. On the one hand, we pick one text description and use CLIP to rank the adequacy between each image and its description. On the other hand, we use this description to generate several images using \gls{dallemini}. CLIP's scores of the generated images were found to be lower than those of the original images, which seems reasonable according to us. 
-In another experiment, we compare the adequacy rating of CLIP with our own on a selected set of texts and picture. In short, we select 100 pictures associated with a text description, then create two other descriptions: a description close to the image and a piece of a text that has nothing to do with it. We find that when CLIP gives a high adequacy score, the human notation is in agreement with it. In some cases, adequate images according to human notation received a low CLIP score. This is mainly due to the fact we use the scores as a probability distribution in this experiment: if one of the text description is considered very adequate by CLIP, the softmax will push its probability towards 1 and the probability of the other possible description towards 0. 
+Firstly, we use CLIP on the Flickr test set that provides hundreds of prompt-image pairs. Thanks to \gls{dallemini} we are able to generate another image for each prompt available in the dataset. We use CLIP to compute the adequacy of each image (original and generated) with the corresponding prompt. We conclude that CLIP's scores of the generated images are lower than those of the original images, which seems reasonable according to us.
+
+In another experiment, we compare the adequacy rating of CLIP with our own on a selected set of texts and pictures. In short, we select 100 prompt-image pairs in the dataset, then create two alternative prompts: a description close to the image and a piece of text that has nothing to do with it. We then use CLIP to compute the adequacy of the images with each of the three prompts. We find that when CLIP gives a high adequacy score, the human notation is in agreement with it. In some cases, adequate images according to human notation received a low CLIP score. This is mainly due to the fact we use the scores as a probability distribution in this experiment: if one of the text descriptions is considered very adequate by CLIP, the softmax will push its probability towards 1 and the probability of the other possible description towards 0, which is not a natural method for a human. 
+
+Nevertheless, this experiment allows us to be confident in CLIP scoring, and to use it instead of our eyes in quantitative experiments involving lots of images. 
 
 \subsection{Assessment of \gls{dallemini}}
 
-Our first approach for evaluating the capabilities of \gls{dallemini} is to try different types of text inputs and see if the generated images correspond to these prompts. We experiment with basic geometric forms, textures, colours, quantifiers and size. Overhaul, the model seems to manage well the colours and textures but not much the rest. It is also very sensitive to the phrasing of the text description: adding "an image of ..." at the beginning of the description greatly increases the quality of the image, probably due to the high frequency of such description prefix in the training set. We also found that \gls{dallemini} can generate compelling landscapes.  
+Our first approach for evaluating the capabilities of \gls{dallemini} is to try different types of text inputs and see if the generated images correspond to these prompts. We experiment with basic geometric forms, textures, colours, quantifiers and size. Overall, the model seems to manage well the colours and textures but not much the rest. It is also very sensitive to the phrasing of the text description: adding "an image of ..." at the beginning of the description greatly increases the quality of the image, probably due to the high frequency of such description prefix in the training set. We also found that \gls{dallemini} can generate compelling landscapes.  
 
-\textcolor{red}{Ajouter des images}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\textwidth}
+    \includegraphics[width=.4\linewidth]{a photo of a computer.jpeg}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+    \includegraphics[width=.4\linewidth]{a photo of a table.jpeg}
+    \end{subfigure}
+    \caption{Bad images produced by mini \gls{dallemini} : A photo of a computer, A photo of a table}
+    \label{fig:mini_dallE_exemples_bad}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\textwidth}
+    \includegraphics[width=.4\linewidth]{a photo of a mountain behind a beach.jpeg}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+    \includegraphics[width=.4\linewidth]{a blue tree in a circle.jpeg}
+    \end{subfigure}
+    \caption{Impressive images produced by mini \gls{dallemini} : A photo of a mountain behind a beach, A blue tree in a circle}
+    \label{fig:mini_dallE_exemples_good}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\textwidth}
+    \includegraphics[width=.4\linewidth]{circle of golden coins.jpeg}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+    \includegraphics[width=.4\linewidth]{A picture of a red bus in a city.jpeg}
+    \end{subfigure}
+    \caption{Funny images produced by mini \gls{dallemini} : Circle of golden coins, A picture of a red bus in a city}
+    \label{fig:mini_dallE_exemples_fun}
+\end{figure}
+
+
+
 
 \subsection{Colour analysis}
 
-Regarding colours, we want to know two things about the images generated by \gls{dallemini}
+The assessment of \gls{dallemini} made us think that it would be relevant to tackle colour management in more detail. We realized that the colour instructions of the prompts were relatively respected and we want to take a closer look.
+
+We want to know two things about the images generated by \gls{dallemini}
 \begin{itemize}
-    \item By comparing the RGB colour histograms, assess whether the images generated have the same characteristics than real ones. 
-    \item Estimate whether \gls{dallemini} correctly takes into account the colours present in the text description of the picture.
+    \item We want to know if the generated images follow the same colour distribution as the images from the training datasets. We plan to do so by comparing the RGB colour histograms. This is an important observation for tracing generation bias that may exist.
+    \item We also want to estimate to what extent \gls{dallemini} correctly takes into account the colours present in the text description of the picture.
 \end{itemize}
 
-We used part of the Flickr dataset as a set of real images, and generated images based on the same prompts in order to have a set of generated images. Then, for red, green and blue, we plot the distribution \textcolor{red}{distribution de quoi exactement ? je suis plus très sûr}.
-Visually, we find that the RGB colour histograms were close. For each colour, we then perform a Kolmogorov–Smirnov test to compare the histogram of the real images to its of the generated ones. All three tests lead to a rejection of the null hypothesis of equality of the distributions at the 5\% level. So, even if it was not visually visible to us, it seems that the images generated by \gls{dallemini} differ from real ones. \textcolor{red}{ajouter l'image des histogrammes ? ou au moins un ?}
+As for CLIP's evaluation, we use part of the Flickr dataset as a set of real images, and we generate images based on the same prompts. Then, for red, green and blue, (colours are coded in RGB) we plot the corresponding colour histogram. (It allows to see the level of activation of the pixels for each colour).
+Visually, we find that the RGB colour histograms are close. For each colour, we then perform a Kolmogorov–Smirnov test to compare the histogram of the real images with the histogram of the generated ones. All three tests lead to a rejection of the null hypothesis of equality of the distributions at the 5\% level. So, even though the colour distribution closely follows the original, it seems that the images generated by \gls{dallemini} present a bias. 
 
-To assess if \gls{dallemini} is correctly taking into account the colours in the text, we compared images generated with prompts only differing by the addition of a colour in one of them. For example, we compare the result of ”a red mountain in the sun” with the one of ”a mountain in the sun”. We then retrieve the colours present in each image, and compare the frequency of presence of some colours depending on whether they are or not in the text description. A high difference of frequency, for example if red is present in 50\% of the pictures in the control group (with no colours required) and 80\% of the pictures with red in the text description, would indicate that \gls{dallemini} "understands" the colour requirement.
+To assess if \gls{dallemini} correctly takes into account the colours in the text, we design a few prompts mentioning a colour instruction ("a picture of a green bus"). We generate images based on these prompts for multiple colours. We also have a control group, the same prompts without colour instructions ("a picture of a bus"). We then retrieve the colours present in each image, and compare the frequency of presence of some colours depending on whether they are required by the text description. The difference in frequency between the 'red' group and the control group in percentage points gives us an indicator of the performance of the model.
 
-Overall, the frequency of presence of the colours is higher when we request it, but the extent to which it is the case depends on the colour. Red, black and white are present in every picture, even if such colour is not asked for. It also seems that some colours will appear more often because of their high frequency in the dataset. 
+Overall, we conclude that \gls{dallemini} performs well for drawing colours. In the report, you can see a detailed analysis of each colour, because the model performance really depends on the colour. Black and white are present in every picture, even if such colour is not asked for, and colours could be over-represented naturally depending on the prompt (when asking for a sea, the model does not need to be told to draw it blue). It also seems that some colours will appear more often because of their high frequency in the dataset. The main added value of this analysis is the design of a colour recognition tool that could be integrated into CLIP to strengthen its scoring, because we noticed that it does not always take into account the respect of the colour instruction in its scoring. 
 
 \end{multicols}
 
@@ -135,7 +191,7 @@ Firstly, we reuse the already-trained \gls{dallemini}'s image processing neural 
 
 With the 2017 MSCOCO dataset, we train our model by feeding as input the image-caption pairs and as output the target image tokens. We compute the difference between the output and the target, called cross-entropy loss. Thanks to that computation, our model is able to correct its parameters (weights) to make better predictions, through a mechanism called backpropagation. We train our model with the training dataset and check the loss with the testing dataset. When we stop our training at the local minimum test loss, our model fails to render adequate images. By overfitting the training dataset, our model can generate newer images but fails to take into account the initial prompt (see figure \ref{fig:tinydalle-images-generated}).
 
-Apart from being unable to replicate \gls{dalle}, we run different experiments that show many interesting results. Firstly, fixing a set of parameters, called frozen parameters, during training can accelerate the training. Indeed, instead of correcting all parameters, the model can focus on correcting a subset of parameters. Hence, they are fewer parameters to correct and thus fewer computations. Moreover, since there are less parameters to correct which are stored into the GPUs' memory, the GPUs can fit more data into memory.
+Apart from being unable to replicate \gls{dalle}, we run different experiments that show many interesting results. Firstly, fixing a set of parameters, called frozen parameters, during training can accelerate the training. Indeed, instead of correcting all parameters, the model can focus on correcting a subset of parameters. Hence, they are fewer parameters to correct and thus fewer computations. Moreover, since there are fewer parameters to correct which are stored in the GPUs' memory, the GPUs can fit more data into memory.
 Furthermore, instead of letting our model correct its parameters at each batch, we can accumulate corrections, called accumulated gradient, and apply these aggregated corrections less frequently. This technique results in fewer back and forth loss corrections but ultimately leads to a steady plateau for both training loss and test loss.
 
 \end{multicols}
