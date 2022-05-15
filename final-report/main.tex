@@ -796,7 +796,7 @@ Some of the results are shown in the appendices, figure \ref{fig:complex_generat
 
 It is with pleasure that we discover the ease with which \gls{dallemini} draws landscapes. After the relative failure of drawing simple shapes and respecting quantifiers, we are also pleasantly surprised by the management of positional requirements (behind, in) and the ability to display several of the requested elements. Based on these observations, we want to focus part of our analysis on the colour management of \gls{dallemini}, which sometimes seems to be remarkable and sometimes overlooked. A difference that is not always correctly evaluated by CLIP. Indeed, an image that does not show a requested colour sometimes gets a better score than images that respect the colour indication.
 
-\subsubsection{Study of the influence of generation's parameters}
+\subsubsection{Sensitivity analysis of the influence of generation's parameters}
 
 So far, we have not spoken of the different options of generations we presented \hyperlink{options-generation}{in the theoretical background part}. We want to know if modifying them, as compared to the default set of parameters, can affect the quality of the generated images.
 
@@ -1010,7 +1010,7 @@ To conclude, in a one-year lapse of time, text-to-image models have shown rampan
 \pagebreak
 \phantomsection
 \addcontentsline{toc}{section}{References}
-\section*{References}
+\section*{Bibliography}
 
 
 \printbibliography[
@@ -1076,7 +1076,7 @@ l_{x,y}(\theta,\psi)&=\ln p_{\theta,\psi}(x,y)\\
 & = \mathbb{E}_{z \sim h_{\phi,x}} \big[ \ln f_{\theta,z}(x) \big]-\KL \big(h_{\phi,x} \| g_\psi(y,\cdot) \big) \equiv \underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)
 \end{align*}
 
-... where $\KL(\cdot\|\cdot)$ represents the Kulback-Leibler divergence.
+... where $\KL(\cdot\|\cdot)$ represents the Kullback-Leibler divergence.
 
 Assuming independence between observed image-text pairs, the evidence lower-bound for the sample $(\mathbf{x}_n,\mathbf{y}_n)$ is similarly obtained:
 \begin{align*}
@@ -1365,7 +1365,7 @@ These two figures present images we obtained using greedy decoding with multiple
 
 \pagebreak
 
-\subsection{Study of parameter's impact on generated images}
+\subsection{Sensitivity analysis of parameter's impact on generated images}
 \label{app:other-gen-param}
 
 The 3 next figures are presenting the results of variations in the parameters of generation for 3 different prompts.
