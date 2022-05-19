@@ -16,6 +16,15 @@
 \newcommand{\bm}[1]{{\color{blue}\textbf{BM}: #1}}
 \newcommand{\mf}[1]{{\color{purple}\textbf{MF}: #1}}
 
+% Manager de couleurs pour les liens
+\hypersetup{
+  citebordercolor = {1 1 1} % White box arround citation (that we can not see
+  %colorlinks   = true, %Colours links instead of  boxes
+  %urlcolor     = green, %Colour for external hyperlinks
+  %linkcolor    =green, %Colour of internal links
+  %citecolor   = grey %Colour of citations
+}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %% Bibliographie
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,12 +54,12 @@
 \newglossaryentry{dallemini}
 {
   name={DALL$\cdot$E Mini},
-  description={The down-scaled open replication of \gls{dalle}, by \citeauthor{wandbdallemini}.}
+  description={The down-scaled open replication of \gls{dalle}, by \citeauthor{wandbdallemini}}
 }
 \newglossaryentry{dalletiny}
 {
   name={DALL$\cdot$E Tiny},
-  description={Our down-scaled replication of \gls{dallemini}.}
+  description={Our down-scaled replication of \gls{dallemini}}
 }
 \newglossaryentry{caption}{
   name={caption, prompt},
@@ -58,19 +67,19 @@
 }
 \newglossaryentry{token}{
   name=token,
-  description={The elementary, discrete (categorical) atom that, together with other tokens, constitutes a text or a (discretely compressed) image. Often a word (or a piece of word) for texts, is more difficult to interpret for images. A "token" can also correspond to the vectorial representation of such atom, whenever we succeed in projecting all the tokens into a Euclidean space.}
+  description={The elementary, discrete (categorical) atom that, together with other tokens, constitutes a text or a (discretely compressed) image. Often a word (or a piece of word) for texts, is more difficult to interpret for images. A "token" can also correspond to the vectorial representation of such atom, whenever we succeed in projecting all the tokens into a Euclidean space}
 }
 \newglossaryentry{codebook}{
   name={codebook, vocabulary},
-  description={The list of authorised tokens values, together with their corresponding vectorial representation.}
+  description={The list of authorised tokens values, together with their corresponding vectorial representation}
 }
 \newglossaryentry{transformer}{
   name=transformer,
-  description={A specific neural-network encoder-decoder architecture popular for texts and images, pioneered by \citetitle{attneed} (\cite{attneed}).}
+  description={A specific neural-network encoder-decoder architecture popular for texts and images, pioneered by \citetitle{attneed} (\cite{attneed})}
 }
 \newglossaryentry{clip}{
   name=CLIP,
-  description={An image-text similarity assessor, notably used for re-ranking the images generated from \gls{dalle}.}
+  description={An image-text similarity assessor, notably used for re-ranking the images generated from \gls{dalle}}
 }
 \newacronym{gpt}{GPT}{Generative Pre-Trained Model}
 \newacronym{dvae}{dVAE}{Discrete Variational Auto-Encoder}
@@ -115,6 +124,8 @@
 \usepackage[margin=1.2in]{geometry} 
 \usepackage{multicol}
 \usepackage[inline]{enumitem} % inline enumerate
+\usepackage{adjustbox}
+\usepackage{dblfnote} % double columns footnotes
 
 % add a 4th level (paragraphs)
 \usepackage{titlesec}
@@ -143,7 +154,7 @@
 \usepackage{mathtools} % for equation alginment with \mathrlap
 \usepackage{cancel} % for cancelation
 \usepackage[scr=boondoxo]{mathalfa} % pour mathscr
-
+\usepackage{aligned-overset} % for alignment even with overset
 \usepackage{paracol}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -266,65 +277,77 @@ $$
 %\begin{multicols}{2}
 
 \begin{paracol}{2}
-The field of text-to-image is a promising recent domain that aims at creating models capable of generating realistic images based on a text description. Here, we are interested in an attempt in creating such model called \gls{dalle}. We present the theoretical background necessary to understand how \gls{dalle} works. We then explore the generation capabilities of \gls{dallemini}, an open-source closely related model. We find that \gls{dallemini} deals pretty well with colour and textures, it can also produce compelling landscape pictures. Finally, we try to implement a version of \gls{dalle} of our own based on a much smaller dataset but fail to generate images corresponding to the requested text description.
+\setlength{\columnsep}{1cm}
+\setlength{\columnseprule}{1pt}
+
+The field of text-to-image is a promising recent domain that aims at creating models capable of generating realistic images based on a text description. Here, we are interested in an attempt in creating such model called \gls{dalle}. We present the theoretical background necessary to understand how \gls{dalle} works. Figure \ref{fig:img-abstract} gives a brief overview of the functioning of the model. 
+
+We then explore the generation capabilities of \gls{dallemini}, an open-source closely related model. This analysis is done both qualitatively and quantitatively: we manually evaluate the images but we also  use the model \gls{clip}, that is able to produce a score quantifying text-image adequacy. Also, we develop a tool to evaluate to what extent \gls{dallemini} correctly takes into account the colours in the text description when generating the image. 
+
+We find that \gls{dallemini} deals pretty well with colour and textures, it can also produce compelling landscape pictures. Finally, we try to implement a version of \gls{dalle} of our own based on a much smaller dataset but fail to generate images corresponding to the requested text description \footnote{The code corresponding to this attempt is available at: https://github.com/cthiounn/dalle-tiny.}.
 
 \switchcolumn
 
-Le champ de recherche du texte-vers-image est un domaine réccent visant à créer des modèles capables de générer des images réalistes à partir d'une description textuelle. Dans ce document, nous nous intéressons à \gls{dalle} , un des modèles s'essayant à cet exercice. Nous présentons le contexte théorique permettant de comprendre comment ce modèle fonctionne. Nous explorons ensuite les capacités de génération de \gls{dallemini}, un modèle proche disponible en accès libre. D'après nos expériences, \gls{dallemini} gère relativement bien les couleurs et les textures; il est en outre capable de générer des paysages convaincants. Finalement, nous tentons de créer une version de \gls{dalle} basé sur un jeu de données bien plus petit mais n'arrivons pas à obtenir un modèle générant des images en rapport avec la description textuelle utilisée. 
+Le champ de recherche du texte-vers-image est un domaine réccent visant à créer des modèles capables de générer des images réalistes à partir d'une description textuelle. Dans ce document, nous nous intéressons à \gls{dalle} , un des modèles s'essayant à cet exercice. Nous présentons le contexte théorique permettant de comprendre comment ce modèle fonctionne. 
+
+Nous explorons ensuite les capacités de génération de \gls{dallemini}, un modèle proche disponible en accès libre. Cette analyse est conduite qualitativement et quantitativement: nous évaluons manuellement les images mais nous appuyons également sur le modèle \gls{clip}, capable de générer un score quantifiant la correspondance entre un texte et une image. Nous développons également un outil permettant d'évaluer à quel point \gls{dallemini} prend bien en compte les couleurs présentes dans la description textuelle lorsqu'il génére l'image. 
+
+D'après nos expériences, \gls{dallemini} gère relativement bien les couleurs et les textures; il est en outre capable de générer des paysages convaincants. Finalement, nous tentons de créer une version de \gls{dalle} basé sur un jeu de données bien plus petit mais n'arrivons pas à obtenir un modèle générant des images en rapport avec la description textuelle utilisée. 
 
 \end{paracol}
 %\end{multicols}
+
+\begin{figure}[b!]
+    \centering
+    \includegraphics[scale=0.4]{img/img-abstract.jpg}
+    \caption{\textbf{Graphical summary of \gls{dalle}-like models}}
+    \label{fig:img-abstract}
+\end{figure}
 
 \pagebreak
 \section{Introduction}
 
 \begin{multicols}{2}
 
-As of today, \gls{ml} — this set of statistical and computer science techniques aiming at designing self-improving algorithms — is widely used for a large range of applications, and it is the subject of a lot of ongoing research. In particular, the sub-fields of \gls{nlp} and computer vision focus on the comprehension and generation of human texts and images respectively. Recent models such as \glslink{gpt}{GPT-3} were found to be very good at text generation and attracted a lot of attention. However, recent work at the frontier between the two fields has proved to be the most interesting, since it forces program designers to develop a unified way to describe both images and texts.
+As of today, \gls{ml} — this set of statistical and computer science techniques aiming at designing predictive algorithms — is widely used for a large range of applications, and it is the subject of a lot of ongoing research. In particular, the sub-fields of \gls{nlp} and computer vision focus on the comprehension and generation of human texts and images respectively. Recent models such as \glslink{gpt}{GPT-3} were found to be very good at text generation and attracted a lot of attention. However, there has been a lot of traction at the frontier between the two fields, as it forces researchers to develop a unified paradigm to describe both images and texts.
 
 Typical tasks for these models are text-to-image (producing an image from a given \glslink{caption}{caption, or prompt}) or image-to-text (giving a caption to an image). Such tasks are interesting for at least two reasons. On the one hand, the ability to generate compelling human language based on images, or quality images based on a prompt, can be viewed as convincing steps towards artificial intelligence, demonstrating a certain degree of comprehension of the world. On the other hand, we can imagine various applications for such models, for example iteratively generating realistic pictures from descriptions in creative industries (architecture, fashion...) or fast image descriptions for visually-impaired persons. 
 
-In the present report, we study one of the few existing text-to-image models, namely the model \gls{dalle} by the company Open AI. The authors of the model train \enquote{a transformer that autoregressively models the text and image tokens as a single stream of data} on a massive dataset of 250 million image-caption pairs harvested from the Internet. One part of the model is a \gls{vae} trained to compress large images into a small representation made of image \glspl{token}, and another is a \gls{transformer} that can model autoregressively the sequence of text tokens from the caption together with the image tokens obtained at the previous step. To put it in another way, given a text description, the transformer can generate a concise sequence of "image tokens" summarizing the image, tokens from which the \gls{vae} component can then recreate a full, realistic picture.
+In the present report, we study one of the many existing text-to-image models, namely the model \gls{dalle} designed by the company Open AI. The authors of the model train \enquote{a transformer that autoregressively models the text and image tokens as a single stream of data} on a massive dataset of 250 million image-caption pairs harvested from the Internet. One part of the model is a (discrete) \gls{vae} trained to compress large images into a small representation made of image \glspl{token}, and another is a \gls{transformer} that can model autoregressively the sequence of text tokens from the caption together with the image tokens obtained at the previous step. To put it in another way, given a text description, the transformer can generate a concise sequence of "image tokens" summarizing the image, tokens from which the \gls{vae} component can then recreate a full, realistic picture.
 
 In this report, we describe in detail how \gls{dalle} is supposed to function, and we reproduce a down-scaled version of the model. Generative models being notoriously hard to test since testing involves judging whether some generated images do or do not correspond to a given description (a hard task even for a human), we also explore one idea for automating this process, based on the correct rendering of colours.
 
-The task is however not straightforward. Indeed, even though \citetitle{zeroshot} (\cite{zeroshot}) was published together with the announcement of the creation of \gls{dalle}, Open-AI decided not to make the model fully public, mainly for ethical concerns. Only the first component (the \gls{vae}) is available. Moreover, the article skims over many useful details. Therefore, in order to understand how this model works, and to generate images for our testing procedure, we have to rely on a public down-scaled replication of the model, \gls{dallemini} (\cite{wandbdallemini, dalleminigit})
-%\footnote{We also marginally exploit yet another replication of \gls{dalle} called \gls{dalle} Pytorch (\cite{dallepytorch}).}
-. At the time of this writing, the same team is working on a promising soon-released \gls{dalle} Mega.
-
-% Ce qui suit est répétitif avec ce qui est dit avant.
-% Et est-ce qu'on veut vraiment présenter dans cet ordre?
+The task is however not straightforward. Indeed, even though \citetitle{zeroshot} (\cite{zeroshot}) was published together with the announcement of the creation of \gls{dalle}, Open-AI decided not to make the model fully public, mainly for ethical concerns. Only the first component (the \gls{vae}) is available. Moreover, the article skims over many useful details. Therefore, in order to understand how this model works, and to generate images for our testing procedure, we have to rely on a public down-scaled replication of the model, \gls{dallemini} (\cite{wandbdallemini, dalleminigit}). At the time of this writing, the same team is working on a promising soon-released \gls{dalle} Mega.
 
 During this project, we have three aims:
 \begin{enumerate}
-    \item To understand the complex architecture of the model
-    \item To run a qualitative and quantitative analysis of the images that the model can generate
-    \item To replicate a \gls{dalle} version of our own, dubbed \gls{dalletiny}
+    \item To understand the complex architecture of the model ; this is section \ref{sec:theory}, where we introduce the theoretical background required to understand \gls{dalle}.
+    \item To run a qualitative and quantitative analysis of the images that the model can generate ; this is section \ref{sec:dalleval}, where we show that some concepts such as colours and textures are better rendered than others like forms, sizes or quantifiers.
+    \item To replicate \gls{dalle} : we present our attempt to create our own version, \gls{dalletiny}, in section \ref{sec:dalletiny}.
 \end{enumerate}
 
-In the first part, we introduce the theoretical background required to understand \gls{dalle}. Then, we present how we generated images using \gls{dallemini}  and the way we analysed them. In the modelling part, we describe our attempt to train a version of \gls{dalle}.
-
+We dedicate section $\ref{sec:data}$ to the presentation of the data sets used in subsequent sections $\ref{sec:dalleval}$ and $\ref{sec:dalletiny}$.
 
 \end{multicols}
 
 \pagebreak
 
-\section{Theoretical and technical background}
+\section{Theoretical and technical background} \label{sec:theory}
 
 \begin{multicols}{2}
 
-In \citetitle{zeroshot} (\cite{zeroshot}), the paper accompanying the release of \gls{dalle}, the theoretical description holds in one paragraph:
-
+In the paper accompanying the release of \gls{dalle} (\cite{zeroshot}), the theoretical description holds in one paragraph:
 
 \begin{displayquote}
 The overall procedure can be viewed as maximising the evidence lower bound (ELB) on the joint likelihood of the model distribution over images $x$, captions $y$, and the tokens $z$ for the encoded RGB image. We model this distribution using the factorisation $p_{\theta, \psi}(x, y, z)=p_{\theta}(x \mid y, z) p_{\psi}(y, z)$, which yields the lower bound
 
-$$
-\begin{aligned} \label{eq:elb_theirs}
-\ln p_{\theta, \psi}(x, y) \geqslant  \mathbb{E}_{z \sim q_{\phi}(z \mid x)} \Big[\ln p_{\theta}(x \mid y, z)\\
+\begin{equation} \label{eq:elb_theirs}
+\begin{aligned} 
+\ln p_{\theta, \psi}(x, y) \geqslant  \\
+\mathbb{E}_{z \sim q_{\phi}(z \mid x)} \Big[\ln p_{\theta}(x \mid y, z)\\
 -\beta D_{\mathrm{KL}}\left(q_{\phi}(y, z \mid x), p_{\psi}(y, z)\right)\Big]
 \end{aligned}
-$$
+\end{equation}
 
 where:
 \begin{enumerate}
@@ -334,11 +357,11 @@ where:
 \end{enumerate}
 \end{displayquote}
 
-The goal of section \ref{derivation} is to put the reader on firm foot for them to fully grasp the number of layers hidden under the authors' concision. Specifically, we will define mathematically our variables of interest, derive a parametric probabilistic model balancing tractability and plausibility and find a sound way to estimate those parameters. Then in section \ref{sec:inference} we will see how one can use the now hopefully transparent probabilistic model to produce image outputs from text inputs, a step known in the \gls{ml} community as "inference". Then in the last section we will discuss the practical implementation of \gls{dalle}. In particular, we will present how \gls{dalle} uses a re-ranking of the generated images using CLIP, another model from Open AI that we will describe. We will also highlight the substantial ways in which \gls{dallemini}, the open replication that we use in the next chapters, differs from \gls{dalle}.
+The goal of section \ref{sec:derivation} is to put the reader in condition to fully grasp the number of layers hidden under the authors' concision. Specifically, we will define mathematically our variables of interest, derive a parametric probabilistic model balancing tractability and plausibility and find a sound way to estimate those parameters. Then in section \ref{sec:inference} we will see how one can use the now hopefully transparent probabilistic model to produce image outputs from text inputs, a step known in the \gls{ml} community as "inference". Then in the last section we will discuss the practical implementation of \gls{dalle}. In particular, we will present how \gls{dalle} uses a re-ranking of the generated images using CLIP, another model from Open AI that we will describe. We will also highlight the substantial ways in which \gls{dallemini}, the open replication that we use in the next chapters, differs from \gls{dalle}.
 
-\subsection{Model derivation and estimation} \label{derivation}
+\subsection{Model derivation and estimation} \label{sec:derivation}
 
-\subsubsection{Text-to-image models as (probabilistic) machine-learning models} \label{section:probml}
+\subsubsection{Text-to-image models as probabilistic machine-learning models} \label{section:probml}
 
 % debate :
 % https://stats.stackexchange.com/questions/408421/is-the-only-difference-between-conditional-generative-models-and-discriminative
@@ -357,7 +380,7 @@ With these definitions and writing $\lambda_i(\theta)=\lambda(x_i,f_\theta(y_i))
     \min_{\theta\in\Theta} \sum_{i=1}^{n} \lambda_i(\theta)
 \end{equation}
 In practice, we use the gradient of the expression with respect to $\theta$ to guide our search for the optimal $\theta^\star$ and the optimal predictor $f^\star=f_{\theta^\star}$.
-Unfortunately, defining such a loss-function $\lambda$ between images is far from straightforward.
+Unfortunately, defining such a loss-function $\lambda$ between images is far from straightforward, as text-to-image is an ill-posed problem.
 
 Indeed, it is challenging to "supervise" a text-to-image model as it would entail that there exists a meaningful loss function that measures "how close" two images are from each other, and this independently of the caption itself!
 First, notice that one unambiguous metric would be a binary function $\lambda(\hat x, x)=\mathbbm{1}(\hat x = x)$,
@@ -374,11 +397,11 @@ It is on the contrary quite likely that for a more precise caption (say "an Indi
 As a consequence, on this specific task, there does not seem to exist an obvious loss function $\lambda$ that could guide a supervised model in the correct direction.
 
 One way to circumvent the problem is to introduce some probabilistic context. In \textbf{probabilistic machine-learning}, we frame the problem more broadly. First, we do not force $\hat x$ the prediction to be deterministic as in $\hat x=f_\theta(y)$. Instead, we add some uncertainty and suppose that we can draw $x$ from some unknown probability distribution $p$, something that we write $\tilde x \sim p(\tilde x|f_\theta(y))$. In turn, we can specify a family of candidate parametric distributions $\mathcal{R}=\{p_\mu(\tilde x, \hat x)|\mu \in \mathbf{M}\subseteq \mathbb{R}^M, M\in\mathbb{N}\}$ modelling the uncertainty around the prediction. For instance, we could define a family $\mathcal{R}=\{p_\sigma:\sigma \in \mathbb{R}_+\}$ so that the uncertainty around a predicted image $\hat x$ would be a normal distribution centred around each individual pixel value $\hat x_i$, i.e. $p_{\sigma}(\tilde x | \hat x)\sim 
-\mathcal{N}(\hat x, \sigma^2 \mathbf{I}_{\di})$. We add a tilde in $\tilde x$ to insist on the distributional nature of $\tilde x$ as opposed to the deterministic nature of $\hat x=f_\theta(y)$. More often than not, we write $p_{\mu,\theta}(x,y)\equiv p_\mu(x, f_\theta(y))$. Note that $\mathcal{P}=\{p_{\mu,\theta}:\mu \in\mathbf{M},\theta\in\Theta\}$ is also a family of probability distributions, although a more complex one than $\mathcal{R}$.
+\mathcal{N}(\hat x, \sigma^2 \mathbf{I}_{\di})$. (We add a tilde in $\tilde x$ to insist on the distributional nature of $\tilde x$ as opposed to the deterministic nature of $\hat x=f_\theta(y)$.) More often than not, we write $p_{\mu,\theta}(x,y)\equiv p_\mu(x, f_\theta(y))$. (Note that $\mathcal{P}=\{p_{\mu,\theta}:\mu \in\mathbf{M},\theta\in\Theta\}$ is also a family of probability distributions, although a more complex one than $\mathcal{R}$.)
 
 With this introduction of a family of distribution functions, we can use \textbf{\gls{mle}} to ground our choice for parameters: the "best" parameter $\mu^\star$ is the one that makes the observed sample more likely. For an arbitrary parametric distribution $q_\mu$ ($\mu \in \mathbf{M} \subseteq \mathbb{R}^Q, Q \in \mathbb{N}_\star$) of a random variable $z$, for which we note $\mathbf{z}_n=(z_1, ..., z_n)$ an observed $n$-sample ($n \in \mathbb{N}_\star$), the maximum-likelihood principle tells us to solve the problem $\max_{\mu \in \mathbf{M}} q_\mu(\mathbf{z}_n)$ (where $q_\mu(\mathbf{z}_n)=\prod_{i=1}^nq_\mu(z_i)$ assuming independence\footnote{\citet{zeroshot} do not make any explicit assumptions about independence between the observations of the sample — they only do so implicitly. And what exactly this independence assumption encompasses is probably up for debate. For instance, the COCO dataset of image-caption pairs we use for our reproduction of \gls{dalle} includes an unusual amount of baseball images. Does the selection mechanism responsible for the very inclusion of images in the database qualify as a dependence mechanism? To what degree is the abundance of baseball images in COCO different from a collection of images extracted from the same movie? In the latter case, the independence assumption would seem rather far-fetched. In the lack of a sound insight on the issue, we follow the rest of the literature in the assumption of independence.}). This is equivalent to $\max_{\mu \in \mathbf{M}} \sum_{i=1}^n \ln q_\mu(z_i)$ — the logarithm being a strictly increasing function, it does not change the maximisation program.
 
-However, in the supervised setting where $z_i=(x_i,y_i)$, we have two competing options to define exactly which distribution correspond to $q_\mu$. We can choose to maximise the conditional $x|y$ or the joint $(x,y)$ likelihood, giving rise to two different strains of models: the first called \textit{discriminative}, \textit{regression} or \textit{predictive} models where  $q_\mu(x_i,y_i)=p_{\mu}(x_i|f_\theta(y_i))\equiv p_{\mu,\theta}(x_i|y_i)$, the second ones \textit{generative} models, where $q_\mu(x_i,y_i)=p_\theta(x_i, f_\theta(y_i))\equiv p_{\mu,\theta}(x_i,y_i)$, without the conditioning. Note that $\forall i=1..n$: $$p_{\mu,\theta}(x_i, y_i)=p_{\mu,\theta}(x_i|y_i) \times p_{\mu,\theta}(y_i)$$ ... and thus that the objective only differ by this crucial $p_{\mu,\theta}(y_i)$ factor.
+However, in the supervised setting where $z_i=(x_i,y_i)$, we have two competing options to define exactly which distribution correspond to $q_\mu$. We can choose to maximise the conditional $x|y$ or the joint $(x,y)$ likelihood, giving rise to two different strains of models: the first called \textit{discriminative}, \textit{regression} or \textit{predictive} models where  $q_\mu(x_i,y_i)=p_{\mu}(x_i|f_\theta(y_i))\equiv p_{\mu,\theta}(x_i|y_i)$, the second ones \textit{generative} models, where $q_\mu(x_i,y_i)=p_\theta(x_i, f_\theta(y_i))\equiv p_{\mu,\theta}(x_i,y_i)$, without the conditioning. Note that $\forall i=1..n$: $$p_{\mu,\theta}(x_i, y_i)=p_{\mu,\theta}(x_i|y_i) \times p_{\mu,\theta}(y_i)$$ ... and thus that the objectives only differ by this crucial $p_{\mu,\theta}(y_i)$ factor.
 
 Predictive models being usually reserved to low-dimensional outputs \citep{probml-advanced}, \cite{zeroshot} opt for a \textbf{generative model} instead. Indeed, we face a situation where the output image space is high-dimensional (see next section). At this point, the reader may be puzzled : isn't the ultimate goal of \gls{dalle} to predict an image \textit{conditional on} a given prompt? The reader is completely right, and we will see later how in the end, because of suitable hypotheses (or restrictions, depending on the perspective) on the family $\mathcal{P}$, we can easily recover $p_{\mu,\theta}(x_i|y_i)$ from $p_{\mu,\theta}(x_i,y_i)$.
 
@@ -392,24 +415,24 @@ In the next section, we will justify the "high-dimensional" nature of $\mathcal{
 
 \subsubsection{Structure of the text-image space}
 
-The mathematical nature of a text $y \in \mathcal{Y}$ and of an image $x\in\mathcal{X}$ is a matter of convention. But whatever one's definition, one thing is for sure: the induced space will always be high-dimensional. As a bonus, the reader will get a better sense of what the data used to train the model really looks like.
+The mathematical nature of a text $y \in \mathcal{Y}$ and of an image $x\in\mathcal{X}$ is a matter of convention. But whichever definition one uses, it is for sure that the induced space will always be high-dimensional. As a bonus, the reader will get a better sense of what the data used to train the model really looks like.
 
 \paragraph{The (discrete) text space}
 
 In \gls{dalle}, a text $y$ is seen as a sequence of $\lt$ text units (or \emph{text \glspl{token}} or simply \emph{tokens} when the context is evident), where each can take up to $\ct$ different authorised values.
-For instance, if text units are ASCII-characters, a text $y$ then consists of 256 character tokens, taking values among the $\ct=2^7=128$ possible character values allowed by the ASCII code
-    \footnote{
-    Even if ASCII uses 7 bits to encode characters, only 95 of them correspond to actual printable characters.
+For instance, if text units are ASCII-characters, a text $y$ then consists of 256 character tokens, taking values among the $\ct=2^7=128$ possible character values allowed by the ASCII code\footnote{
+    This is an approximation.
+    Indeed, even if ASCII uses 7 bits to encode characters, only 95 of them correspond to actual printable characters.
     The remaining slots are reserved for control characters, of which just a couple remain in use to this day, such as tabulation or carriage return.
-    }
-.
-This \glslink{codebook}{\textbf{codebook}} size $\ct$ is also known as the \textbf{vocabulary size}, especially in the context where text tokens are not individual characters, but sequences of characters such as words or parts of words (subwords).
+    }.
+This \textbf{vocabulary} (sometimes also known as the \textbf{dictionary} or \glslink{codebook}{\textbf{codebook}}) may consist in a handful of characters as in the previous example, or on the contrary contain thousands of sequences of characters, such as words or parts of words (subwords).
 
 Since the codebook (or vocabulary, we will use the two interchangeably from now on) lists all the possible values that a text token may take, this allows us to replace any chain of characters with an integer pointing to the entry in the vocabulary. 
-In this context, a single text input $y$ is a chain of $\lt$ integer (or discrete, or categorical) variables, each taking value among the $\ct$ possible entries from the code.
-We thus consider that $\mathcal{Y}\equiv [\![1,\ct ]\!]^{\lt}$, which is a discrete space of $\ct^\lt$ elements. 
+In this context, a single text input $y$ is a chain of $\lt$ integer variables, each taking value among the $\ct$ possible entries from the code.
+We thus consider that $\mathcal{Y}\equiv [\![1,\ct ]\!]^{\lt}$, which is a discrete space of $\ct^\lt$ elements.
+($y$ is "discrete" or "categorical" in the sense that the order between integer values does not bear meaning. They are just the indices of some entries in the vocabulary.)
 
-Alternatively, writing $\dt = \lt \times \ct$ and $\mathscr{M}_{a,b}(E)$ the space of matrices of size $(a,b)$ whose elements take values from $E$, we can envision this discrete space as a subset of $\mathcal{Y} \subset \mathscr{M}_{\lt,\ct}(\{0,1\})\equiv \{0,1\}^\dt$, in which the rows sum to one.
+Alternatively, writing $\dt = \lt \times \ct$ and $\mathscr{M}_{a,b}(E)$ the space of matrices of size $(a,b)$ whose elements take values from $E$, we can envision this discrete space $\mathcal{Y}$ as a subset of $\mathscr{M}_{\lt,\ct}(\{0,1\})\equiv \{0,1\}^\dt$, in which the rows sum to one.
 This depiction will come in useful when we will want to discuss a probability distribution over the code for each token, in which case we will relax the $\{0,1\}$ restriction and authorise any value inside $[0,1]$ and interpret these values as probabilities.
 
 But how to define the codebook?
@@ -425,7 +448,7 @@ Instead of merging frequent pairs of bytes, we merge characters or character seq
 We iteratively count all symbol pairs and replace each occurrence of the most frequent pair (‘A’, ‘B’) with a new symbol ‘AB’.
 }
 
-The practical vocabulary size (topping at a few tens of thousands) is usually much smaller than the typical vocabulary mastered by an English speaker, which means that a lot of words will be split into subwords units.
+The practical codebook size (topping at a few tens of thousands) is usually much smaller than the typical vocabulary mastered by an English speaker, which means that a lot of words will be split into subwords units.
 Typically, the plural word "rats" will be decomposed as "rat" and "s".
 In order to fix the reader's ideas, here is the encoding of the first caption appearing in OpenAI's blog post introducing \gls{dalle}\footnote{OpenAI did not release the tokeniser of \gls{dalle}, but we assume it follows the same principle as their previous models \glslink{gpt}{GPT}-2 and GPT-3, of which only the former has been made public. Both GPT-2 and GPT-3 use a larger $\ct=50257$ vocabulary size (as compared to $16384$ for \gls{dalle}), but the value of the example remains. The code used to obtain the actual encoding is available in appendix \ref{textencoding}}. The phrase :
 
@@ -454,9 +477,9 @@ So far we have made two points: \begin{enumerate*}[label=(\roman*)]
 \item both the text space $\mathcal{Y}$ and the image space $\mathcal{X}$ are high-dimensional ;
 \item with high-dimensional examples $(y,x)\in\mathcal{Y}\times\mathcal{X}$, it is better to estimate a generative probabilistic model than a discriminative one.
 \end{enumerate*}
-That means we need to pick an arbitrary parametric family of distributions $\mathcal{P}$, in which we will try to find the one distribution $p^\star$ that best matches the examples $(\mathbf{x}_n,\mathbf{y}_n)$ in the sense that $\prod_{i=1}^{n} p^\star(x_i,y_i)$ is maximal.
+That means we need to pick an arbitrary parametric family of distributions $\mathcal{P}$, in which we will try to find the one distribution $p^\star$ that best matches the examples $(\mathbf{x}_n,\mathbf{y}_n)$ in the sense that $\prod_{i=1}^{n} p^\star(x_i,y_i)$ is maximal. As we will see, this objective is not manageable in our setting, and we will use a surrogate objective instead.
 
-But on which bases should we choose $\mathcal{P}$? There are three main ideas : tractability, expressivity and auto-regressivity. Tractability means that there exists a way to find (or approach) the best candidate $p^\star \in \mathcal{P}$, or more concretely, given that we use numerical (as opposed to exact) methods, that both our optimisation objective function and its derivative can be computed exactly (or estimated accurately). Expressivity means that the model covers a wide range of possible true distribution, and correctly captures what makes texts and images specific. The last idea, auto-regressivity, offers the possibility to recover a conditional (predictive) model from the estimated joint distribution.
+But on which bases should we choose $\mathcal{P}$? There are three main ideas : tractability, expressivity and auto-regressivity. Tractability means that there exists a way to find (or approach) the best candidate $p^\star \in \mathcal{P}$, or more concretely, given that we use numerical (as opposed to exact) methods, that both our optimisation objective function and its derivative can be computed exactly (or estimated accurately). Expressivity means that the model covers a wide range of possible true distributions, and correctly captures what makes texts and images specific. The last idea, auto-regressivity, offers the possibility to recover a conditional (predictive) model from the estimated joint distribution.
 
 In the following, we present the main steps of the construction, and defer to the appendices or to references for more details.
 
@@ -471,6 +494,8 @@ In the following, we present the main steps of the construction, and defer to th
     This vocabulary comes from the unconditional case where $p(x)=\frac{p(x|z)p(z)}{p(z|x)}$ and where $p(z)$ is here correctly labelled as the arbitrary "prior" over the distribution of the unobserved $z$.
     However, in our case, it does not make much sense to talk about a "prior" over $y$ since we can not "believe" anything about what we actually see for a caption. In our opinion, the "prior" label brings more confusion than it actually helps. For instance, it wrongly suggests that we can "believe" arbitrary things about $p(y,z)$. Such hypotheses can only be made over the distribution of the unobserved $z$.
     }.
+    
+    $z$ intuitively represents a compressed version of the image $x$ and, for reasons that will become clearer, $z$ is referred to as a \textbf{code} consisting in a sequence of \textbf{image tokens}, in the same way that $y$ is a sequence of text tokens.
     
     \item The nice thing here is that this decomposition stays true irrespective of the distribution of $z$.
     We can thus choose the one we like best!
@@ -497,16 +522,16 @@ In the following, we present the main steps of the construction, and defer to th
     $$g_{\psi}(y,z)\simeq p(y,z)$$
     By replacing the image $x$ with its encoding $z$, we greatly simplified the modelling problem in comparison with the direct estimation of $p(x,y)$ as (a) $y$ and $z$ are now both discrete and (b) the dimensionality of $z$ is vastly smaller than that of $x$ ($\dl\ll\di$).
     
-    Additionally, we make the requirement that $g_\psi(y,z)$ be \textbf{auto-regressive}. Temporarily noting $\mathbf{a}=(y \quad z)$ the concatenation of text and image tokens (where bold font higlights the vector nature of $\mathbf{a}$) and noting $a_k$ the $k$-th element of $\mathbf{a}$, we indeed have the decomposition: \begin{equation*} \begin{split}
+    Additionally, we make the requirement that $g_\psi(y,z)$ be \textbf{auto-regressive}. Temporarily noting $\mathbf{a}=(y \quad z)$ the concatenation of text and image tokens (where bold font highlights the vector nature of $\mathbf{a}$) and noting $a_k$ the $k$-th element of $\mathbf{a}$, we indeed have the decomposition: \begin{equation*} \begin{split}
     p(\mathbf{a}) = p(a_1) \times p(a_2|a_1) \times p(a_2|a_1,a_2) \times \\ ... \times p(a_{\lt+\llat}|a_1,a_2,...,a_{\lt+\llat-1})\end{split} \end{equation*}
     
     But on the other hand, the explicit fully auto-regressive expression is not tractable in practice because the dependency of the current state $a_k$ on the past states $(a_1,..., a_{k-1})$ is both increasing over time and of considerable size at the last stages. And since each $a_k$ is discrete and can take thousands of possible distinct values, the distribution of $\mathbf{a}$ is in practice impossible to properly evaluate. ($\mathbf{a}$ can take $\ct^\lt\times\clat^\llat$ possible values.)
     
-    There are two tricks to resolve the problem. \begin{itemize*}
+    There are two tricks to resolve the problem. \begin{enumerate*}[label=(\roman*)]
         \item We can try to summarise all the past variables up to token $k$ into a hidden latent variable $\eta_k$ and
         \item instead of frontally estimating $g_{\psi}$, we can estimate a transition between state $(a_{k-1},\eta_{k-1})$ and state $(a_{k},\eta_{k})$.
-    \end{itemize*}
-    Let us write $\gamma_{\psi,(a_{k-1},\eta_{k-1})}$ the density over the $k$-th state of the sequence, from state $k-1$.
+    \end{enumerate*}
+    We write $\gamma_{\psi, (a_{k-1},\eta_{k-1})}(a_k, \eta_k)$ the distribution over the $k$-th state of the sequence, as foreseen from the $k-1$-th state.
     
     \item At this point note that we have an estimand $p_{\theta,\psi}$ of the whole distribution $p$ since: \begin{align*}
         p_{\theta,\psi}(x,y,z) & \overset{\text{def.}}{=} f_{\theta,z}(x) \, g_{\psi}(y,z) \\
@@ -516,46 +541,46 @@ In the following, we present the main steps of the construction, and defer to th
     Therefore, an approximation for $p(z|x)=p(x,z)/p(x)$ is "known" and could in theory be made explicit. However, the derivation of this quantity involves the unbearable computation of $p(x)$ by integrating $p(x,y,z)$ over both $y$ and $z$.
     
     \item As an alternative, we can bypass this step and just \textit{estimate} $p(z|x)$ with yet a new parametric distribution $h_{\phi,x}\in \mathcal{H}\equiv \{h_{\phi,x}|\phi\in\Phi\subseteq\mathbb{R}^{H},x\in\mathcal{X}\}$, a practice known as \textbf{amortised variational inference}\footnote{"Variational inference" is the idea that $p(z|x)$ could be estimated from an arbitrary family of distributions instead of being derived explicitly from $p(x,z)$. "Amortisation" is the idea that this distribution may depend on $x$.}. Provided that this function family is flexible enough and that we have enough data to estimate its parameters, we should get a close approximation of the true conditional distribution:
-    $$h_{\phi,x}(z)\simeq p_{\theta,\psi}(z|x,y)\simeq p(z|x,y)$$
+    $$h_{\phi,x}(z)\simeq p_{\theta,\psi}(z|x)\simeq p(z|x)$$
     This is the probability of the image tokens $z$ given the real image $x$, or in other words a \textbf{stochastic image encoder}. The pair $(f_{\theta,z}, h_{\phi,x})$ forms what is known as a \textbf{variational auto-encoder} since with both functions you can generate a code from an image, then generate back the image from the code.
     
-    \item It is now time to summarise: so far we have two families of densities, $\mathcal{F}$ and $\mathcal{G}$, that are used to approximate $p(x,y,z)$ (and ultimately $p(x|y)$) and an other one, $\mathcal{H}$, approximating to bypass the complex derivation of an estimand for $p(z|x)$. Using \gls{mle}, we want to maximise (section \ref{section:probml}): \begin{align*}\mathscr{l}_n(\theta,\psi) & \equiv \sum_{i=1}^n \mathscr{l}_{x_i,y_i}(\theta,\psi) \\ & \equiv \sum_{i=1}^n \ln p_{\theta,\psi}(x_i,y_i)\end{align*}
+    \item It is now time to summarise: so far we have two families of densities, $\mathcal{F}$ and $\mathcal{G}$, that are used to approximate $p(x,y,z)$ (and ultimately $p(x|y)$) and an other one, $\mathcal{H}$, that approximates $p(z|x)$ independently for computational reasons. Using \gls{mle} as presented in section \ref{section:probml}, we would like to maximise: \begin{align*}\mathscr{l}_n(\theta,\psi) & \equiv \sum_{i=1}^n \mathscr{l}_{x_i,y_i}(\theta,\psi) \\ & \equiv \sum_{i=1}^n \ln p_{\theta,\psi}(x_i,y_i)\end{align*}
     
     Alas, with the introduction of $h_{\phi,x}$, we can not compute $\mathscr{l}_{x,y}(\theta,\psi)$ exactly. However, noting $\textrm{KL}(\cdot \| \cdot )$ the Kullback-Leibler divergence, we show in appendix \ref{app:elbo} that $\forall \phi \in \Phi$, and for a random variable $z\sim h_{\phi,x}$:
-    \begin{align} \label{eq:elb_ours}
-    \mathscr{l}_{x,y}(\theta,\psi) \geqslant \underbrace{\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)}{} \\ \equiv \mathbb{E}_z \Big[\ln f_{\theta,z}(x)\Big] - \textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big) \\ =\mathbb{E}_z \Big[\ln f_{\theta,z}(x)+\ln g_\psi(y,z) -\ln h_{\phi,x}(z)\Big]
-    \end{align}
-    Said differently, there exists a lower-bound on the likelihood known as the \gls{elbo} and there are reason to believe that the closest $h_{\phi,x_i}$ is to $p(\cdot|x)$, the tighter the bound. % (see appendix \label{app:tightness}).
+    \begin{equation}
+    \begin{aligned} 
+    \label{eq:elb_ours} \mathscr{l}_{x,y}(\theta,\psi) \geqslant \underbrace{\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)}{} \\ \equiv \mathbb{E}_z \Big[\ln f_{\theta,z}(x)\Big] - \textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big) \\ =\mathbb{E}_z \Big[\ln f_{\theta,z}(x)+\ln g_\psi(y,z) -\ln h_{\phi,x}(z)\Big]
+    \end{aligned}
+    \end{equation}
+    Said differently, there exists a lower-bound on the likelihood known as the \gls{elbo} and there are reasons to believe that the closest $h_{\phi,x}$ is to $p(\cdot|x)$, the tighter the bound \citep{probml-advanced}. % (see appendix \label{app:tightness}).
     
     \item After a series of computational tricks giving additional requirements on the $z$ distribution, we can show that the derivatives of $\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)$ with respect to every parameter can be estimated with \textbf{Monte-Carlo simulation}. (See \ref{app:elbderivative} for in-depth treatment.) This means that we can now use standard optimisation methods such as \textbf{stochastic gradient ascent} to find the maximal $\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)$, a hopefully good-enough approximation of $\mathscr{l}_{x,y}(\theta,\psi,\phi)$. (See appendix  \ref{app:estimation} for the details of the stochastic gradient procedure.)
 \end{enumerate}
 
-And here we are! At the very core of the estimation procedure lays the \gls{elbo}.
+And here we are! At the very core of the estimation procedure, exact \gls{mle} estimation has been replaced by a lower bound: the \gls{elbo} (equations \ref{eq:elb_theirs} in the original paper, and equation \ref{eq:elb_ours} in our report). So let us put some extra weight on the interpretation.
 
-In the very central equation \ref{eq:elb_ours}, $\mathbb{E}_z \Big[\ln f_{\theta,z}(x)\Big]$ can be seen as the \textbf{reconstruction quality} of the image $x$: for a given encoder $h_{\phi,\cdot}$,  we can sample a compressed image $\tilde z\sim h_{\phi,x}$ (where the $\tilde{\phantom{x}}$ emphasises that $z$ is random, as opposed to the observed image $x$) ; for a given decoder $f_{\theta,\cdot}$, we can sample a reconstructed image $\hat x\sim f_{\theta,\tilde z}$. How likely are we to get back to $x$ ?
+In equation \ref{eq:elb_ours}, $\mathbb{E}_z \Big[\ln f_{\theta,z}(x)\Big]$ can be seen as the \textbf{reconstruction quality} of the image $x$: for a given encoder $h_{\phi,\cdot}$,  we can sample a compressed image $\tilde z\sim h_{\phi,x}$ (where the $\tilde{\phantom{x}}$ emphasises that $z$ is random, as opposed to the observed image $x$) ; then for a given decoder $f_{\theta,\cdot}$, we can sample a reconstructed image $\hat x\sim f_{\theta,\tilde z}$. How likely are we to get back to $x$ ?
 
-In turn, $\textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big)$ can be seen as a regularisation penalty which is smallest when the following two distributions align: \begin{enumerate*}[label=(\roman*)] \item the distribution of the compressed images $\tilde z$ possibly arising when encoding the true image $x$ and \item the distribution of the compressed images $\tilde z^\prime$ possibly arising after the corresponding caption $y$\end{enumerate*}.
+In turn, $\textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big)$ can be seen as a \textbf{regularisation penalty} which is smallest when the following two distributions align: \begin{enumerate*}[label=(\roman*)] \item the distribution of the compressed images $\tilde z$ possibly arising when encoding the true image $x$ and \item the distribution of the compressed images $\tilde z^\prime$ possibly arising after the corresponding caption $y$\end{enumerate*}.
 
 Said differently, our new objective favours on the one hand a good reconstruction of the images and on the other hand an alignment of the $\tilde z$ distribution arising from either the encoding of the image $x$ or the continuation of the caption $y$.
 
-Now, if you compare \citeauthor{zeroshot}'s inequality (equation \ref{eq:elb_theirs}) with ours (equation \ref{eq:elb_ours}), you will find much similarities. In total, there are four divergences:
+Now, if the reader attentively compare \citeauthor{zeroshot}'s inequality (equation \ref{eq:elb_theirs}) with ours (equation \ref{eq:elb_ours}), they will find four small divergences beyond the overall similarity :
 
 \begin{itemize}
     \item First, superficial notation differences, since we use $f_{\theta,z}$, $g_\psi$ and $h_{\phi,x}$ where they use $p_\theta(\cdot|z)$, $p_\psi$ and $q_\phi(\cdot|x)$.
     \item Then they make a mistake in the conditioning over $y$, using $p_\theta(y,z|x)$ and $q_\phi(y,z|x)$ where it should have been $p_\theta(x,y|z)$ and $q_\phi(z|x,y)$.
-    \item There is also a narrative choice not to make the independence assumptions between $z$ and $y$ clear at this stage, thus writing $p_\theta(x,y|z)$ instead of just $p_\theta(x|z)$).
-    \item And finally, the most substantial difference is an extension to (and departure from) the probabilistic interpretation, where \citeauthor{zeroshot} prefer to deepen the view that $\textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big)$ is a regularisation term, and thus add a tunable "regularisation weight" $\beta$ to the lot.
+    \item There is also a narrative choice not to make the independence assumptions between $z$ and $y$ clear at this stage, thus writing $p_\theta(x,y|z)$ instead of just $p_\theta(x|z)$.
+    \item And finally, the most substantial difference is an extension to (and departure from) the probabilistic interpretation, where \citeauthor{zeroshot} prefer to deepen the view that $\textrm{KL}\Big( h_{\phi,x} \| g_\psi(y,\cdot) \Big)$ is a regularisation term, and thus add a tunable "regularisation weight" $\beta$ to the lot. This later choice however breaks the probabilistic interpretation of the overall method and is thus not explored in our report.
 \end{itemize}   
-
-This later choice however breaks the probabilistic interpretation of the overall method and is thus not explored in our report.
 
 \subsection{Model inference} \label{sec:inference}
 
 In this section, we suppose that we have trained the model described in the preceding section, that is that we know parameters $\psi^\star$, $\phi^\star$ and $\theta^\star$ such as the \gls{elbo} is maximal over our sample of pairs of texts and images. From there, how do we actually generate images from new, unseen prompts?
 
-The answer involves generating a sequence of image tokens $\tilde z\equiv (\tilde z_1 \; ... \; \tilde z_{\llat})$ based on the tokenised prompt $y$ and then reconstructing $\tilde x$ from $ \tilde z$ (where the $\tilde{\phantom{x}}$ emphasises randomness, as opposed to the given caption $y$). The reconstruction step is easy, as it just requires being able to sample from $f_{\theta^\star, \tilde z}$. But the sequence generation is unfortunately difficult !
+The answer involves generating a sequence of image tokens $\tilde z\equiv (\tilde z_1 \; ... \; \tilde z_{\llat})$ based on the tokenised prompt $y$ and then reconstructing $\hat x$ from $ \tilde z$ (where the $\tilde{\phantom{z}}$ and $\hat{\phantom{x}}$ emphasise randomness, as opposed to the given caption $y$). The reconstruction step is easy, as it just requires being able to sample from $f_{\theta^\star, \tilde z}$. But the sequence generation is unfortunately difficult !
 
-For reminder, writing $\mathbf{a}=(y \quad z)$ the concatenation of the text tokens and the image codes, we have not estimated the full distribution $g_{\psi^\star}(\mathbf{a})$ but only the token-to-token transition distribution $\gamma_{\psi^\star,(a,\eta)}$ ! (The bold font is used to highlight that $\mathbf{a}$ is a vector of tokens noted individually $a$, or $a_k$ when needed.) From the $k$-th token $a_k$ and knowing the latent summary variable $\eta_k$, we can easily sample the next token-latent pair $(a_{k+1},\eta_{k+1})$, but clearly not a sequence of $\llat$ tokens! Strictly speaking, eliciting the probability distribution of the $k$-tokens sequences would require to evaluate $\clat^k$ times $\gamma_{\psi^\star,\cdot}$ since each image token can take any of $\clat$ possible codebook values — and this without consideration for the possible stochasticity of the transition!
+For reminder, writing $\mathbf{a}=(y \quad z)$ the concatenation of the text tokens and the image codes, we have not estimated the full distribution $g_{\psi^\star}(\mathbf{a})$ but only the token-to-token transition distribution $\gamma_{\psi^\star,(a_{k-1},\eta_{k-1})}(a_k,\eta_k)$ ! (The bold font is used to highlight that $\mathbf{a}$ is a vector of tokens noted individually $a_k$.) From the $k$-th token $a_k$ and knowing the latent summary variable $\eta_k$, we can easily sample the next token-latent pair $(a_{k+1},\eta_{k+1})$, but clearly not a sequence of $\llat$ tokens! Strictly speaking, eliciting the probability distribution of all $k$-tokens sequences would require to evaluate $\clat^k$ times $\gamma_{\psi^\star,\cdot}$, since each image token can take any of $\clat$ possible codebook values. This is clearly impossible in practice.
 
 Concretely, \hypertarget{options-generation}{the actual sampling can be done in various different ways }(\cite{howtogen}):
 \begin{itemize}
@@ -568,37 +593,42 @@ Concretely, \hypertarget{options-generation}{the actual sampling can be done in 
 
 \subsection{Model implementations}
 
-Now that the reader understands the rationale for Dall$\cdot$E's model, they understand that there might be many different flavours of the model depending on the exact values of the parameters and the exact choice of the probability distribution families. Parameters are summarised in table \ref{tab:parameters} and choices of distribution families are described in the following section.
+Now that the reader understands the rationale for Dall$\cdot$E's model, they understand that there might be many different flavours of the model depending on the exact values of the parameters (the text vocabulary size, the image codebook size, etc.) and the exact choice of the probability distribution families. Parameters are summarised in table \ref{tab:parameters} and choices of distribution families are detailed in the following section.
 
 The actual implementation also depends on additional considerations, notably the data collection and training procedures. As part of the final release of \gls{dalle}, \citeauthor{zeroshot} are also introducing a completely different model, \gls{clip}, whose task is to assess numerically the proximity between a text and an image. Since we will use CLIP for our own quantitative experiments, it is worth another section.
 
-With variations possible at each and every step, there might be eventually many different flavours of Dall$\cdot$E. From now on, we use the \gls{dallemini} flavour, a version that has been made public, and highlight the divergence from the original.
+With variations possible at each and every step, there might be eventually many different flavours of Dall$\cdot$E. From now on, we will use the \gls{dallemini} flavour, a version that has the considerable advantage to have been made entirely public. In the last section, we highlight the divergences between \gls{dallemini} and the original.
 
 \subsubsection{Choice of distribution families}
 
 \paragraph{\gls{dvae}} \label{sec:dvae}
 
-For the variational auto-encoder pair $(f_{\theta,z}, h_{\phi,x})$, \citeauthor{zeroshot} use deterministic neural networks, together with assumption about the distribution of the residuals. The two aspects are not clearly articulated in the paper. Here the description of the two neural networks :
+For the variational auto-encoder pair $(f_{\theta,z}, h_{\phi,x})$, \citeauthor{zeroshot} use two deterministic neural networks, together with two sets of assumptions about the probabilistic distribution of $z$ and $x$, distributions whose parameters are ultimately the outputs of the neural networks. The two aspects are not clearly articulated in the paper, so the following gives our best understanding.
+
+The architecture of the neural networks is quite advanced, and an extensive introduction is out of scope for this report. Here is the concise description given by the authors:
 
 \blockquote{The dVAE encoder and decoder are convolutional ResNets with bottleneck-style resblocks. The models primarily use 3 × 3 convolutions, with 1 × 1 convolutions along skip connections in which the number of feature maps changes between the input and output of a resblock. The first convolution of the encoder is 7 × 7, and the last convolution of the encoder (which produces the 32 × 32 × 8192 output used as the logits for the categorical distributions for the image tokens) is 1 × 1. Both the first and last convolutions of the decoder are 1 × 1. The encoder uses max-pooling [...] to downsample the feature maps, and the decoder uses nearest-neighbor upsampling.}
 
-And here is our understanding of the $z$ and $x$ distributions. On one hand, $h_{\phi,x}$ is set to be the categorical distribution whose weights are governed by the output of the deterministic encoding neural network taking $x$ as input. However, since it is discrete, the reparametrisation trick does not work. The authors use the Gumbel-softmax relaxation, replacing $h_{\phi,x})$ by $h^\tau_{\phi,x})$, a continuous approximation that tends towards $h^\tau_{\phi,x})$ as $\tau \to 0$.  (See appendix \ref{app:elbderivative} for a light introduction.) On the other hand, $p_{\theta,z}$ is supposed to follow a log-Laplace distribution who weights are given by the decoding neural network taking $z$ as input. (Contrary to many other common choices such as the normal distribution, the log-Laplace distribution ensures that each component $z_k$ of $z$ belongs to the $(0,1)$ interval, and can thus be interpreted as a colour-channel value.)
+As for the probabilistic assumptions, on the one hand, $h_{\phi,x}(z) \simeq p(z|x)$ is set to be the categorical distribution, whose weights vary with $x$ through the deterministic \enquote{convolutional ResNet} just mentioned\footnote{There are subtleties. One cannot compute the gradient with respect to $\phi$ of a categorical distribution, so the authors use the Gumbel-softmax relaxation, replacing $h_{\phi,x}$ by $h^\tau_{\phi,x}$, a continuous approximation that tends towards $h^\tau_{\phi,x}$ as $\tau \to 0$. See appendix \ref{app:elbderivative} for details about the reparametrisation trick and an introduction to the Gumbel-softmax relaxation.}.
+On the other hand, $p_{\theta,z}(x) \simeq p(x|z)$ is supposed to follow a log-Laplace distribution who weights are given by the (deterministic) decoding neural network, taking $z$ as input\footnote{Contrary to many other common choices such as the normal distribution, the log-Laplace distribution ensures that each component $\hat x_k$ of $\hat x$ belongs to the $(0,1)$ interval, and can thus be interpreted as a colour-channel value.}.
 
 \paragraph{\Gls{transformer}}
 
 For the auto-regressive component $g_\psi$, \citeauthor{zeroshot} use a family of distributions called "transformers" made famous in the literature by \citetitle{attneed} (\cite{attneed}). We do not wish to enter the details, but a \textbf{transformer} is a sequence-to-sequence neural network, that constantly updates a hidden state variable through a tunable mechanism of \textbf{attention}. (Intuitively, the attention mechanism gives the possibility to learn what exactly is worth remembering from the past of the sequence. For instance, it can learn that whenever it encounters a parenthesis, it must remember a hidden "parenthesis open" state, in order to consistently close the parenthesis later on.)
-A considerable advantage of transformers in practice is, because of design tricks, that they are easier than traditional recursive / auto-regressive models to train in parallel on multi-core machines or on clusters. For more details on \gls{transformer} and attention mechanisms, we refer the reader to \cite{illustransfo, attmechanism, yttransfatt}
+A considerable advantage of transformers in practice is, because of design tricks, that they are easier than traditional recursive / auto-regressive models to train in parallel on multi-core machines or on clusters. For more details on \gls{transformer} and attention mechanisms, we refer the reader to \citet{illustransfo, attmechanism, yttransfatt}
 
-Contrary to the \gls{dvae}, the transformer has not been released by Open-AI, and isn't described in much detail. (The authors refer to \cite{long-sequences} for details.) The reader will only know that they use a \enquote{12-billion parameter sparse transformer} that possesses \enquote{64 attention layers, each of which uses 62 attention heads with a per-head state size of 64} and \enquote{uses three kinds of sparse attention masks}.
+Contrary to the \gls{dvae}, the transformer has not been released by Open-AI, and isn't described in much detail.  The reader will only know that they use a \enquote{12-billion parameter sparse transformer} that possesses \enquote{64 attention layers, each of which uses 62 attention heads with a per-head state size of 64} and \enquote{uses three kinds of sparse attention masks}. The authors refer to \citet{long-sequences} for details.
 
 \subsubsection{Training} \label{section:training}
 
 The \gls{vae} is trained first, then the \gls{transformer} is trained separately. The reason for not alternating the training of the two at each step of the optimisation procedure is not clear to us.
 
 It uses "250 million image-text pairs collected from the internet" that :
-\blockquote{... incorporates Conceptual Captions, the text-image pairs from Wikipedia, and a filtered subset of YFCC100M. (...) These filters include discarding instances whose captions are too short, are classified as non-English by the Python package \texttt{cld3}, or that consist primarily of boilerplate phrases such as \og photographed on <date>\fg (...) We also discard instances whose images have aspect ratios not in [1/2, 2]. If we were to use very tall or wide images, then the square crops used during training would likely exclude objects mentioned in the caption.}
+\blockquote{... incorporates Conceptual Captions, the text-image pairs from Wikipedia, and a filtered subset of YFCC100M. (...) These filters include discarding instances whose captions are too short, are classified as non-English by the Python package \texttt{cld3}, or that consist primarily of boilerplate phrases such as \enquote{photographed on [date]} (...) We also discard instances whose images have aspect ratios not in [1/2, 2]. If we were to use very tall or wide images, then the square crops used during training would likely exclude objects mentioned in the caption.}
 
-The original paper devotes considerable treatment for optimising and accelerating the training, down to considerations for the choice between 16-bit or 32-bit float encoding. Meta-parameters such as $\beta_t$, $\tau_t$ and $r_t$ (where $t$ denotes a step in the optimisation procedure) are repeatedly diminished and annealed during training according to specified schedules. (See appendix  \ref{app:estimation} for en example of the estimation procedure with varying $\tau_t$ and $r_t$.)
+The original paper devotes considerable treatment for optimising and accelerating the training, down to considerations for the choice between 16-bit or 32-bit float encoding.
+
+Denoting $t$ the current step in the optimisation procedure, meta-parameters such as as the regularisation penalty $\beta_t$ (section \ref{sec:derivation}), the temperature $\tau_t$ controlling the discreteness of the $z$ distribution (section \ref{sec:dvae}) or the learning rate $r_t$ (governing the amount of change allowed at each step) are repeatedly diminished and annealed during training according to specified schedules. See appendix \ref{app:estimation} for an simplified example of the estimation procedure with varying $\tau_t$ and $r_t$.
 
 \subsubsection{\gls{clip}}
 
@@ -606,9 +636,13 @@ When working with image generation as we are, a central issue is the evaluation 
 
 \subsubsection{Variations: \gls{dallemini}, \gls{dalletiny}}
 
-As mentioned earlier, the specifics of \gls{dalle}'s auto-regressive component have not been released, and we were not ready to re-implement them totally from the ground up, notably because of the considerable amount of data collection involved. We base our effort of analysis on a down-scaled version, \gls{dallemini}, that differs from the original in more than one way. In our effort to re-implement \gls{dalle}, we often follow \gls{dallemini} in their choices, basing our work on the considerable amount of public documentation.
+As mentioned earlier, the specifics of \gls{dalle}'s auto-regressive component have not been released, and it has not been possible to re-implement them totally from the ground up, notably because of the considerable amount of data collection involved. We base our effort of analysis on a down-scaled version, \gls{dallemini}, that differs from the original in more than one way. In our effort to re-implement \gls{dalle}, we also often follow \gls{dallemini} in their choices, basing our work on the considerable amount of public documentation.
 
-The major difference comes from the slightly distinct distribution families for the auto-encoder pair $(f_{\theta,z}, h_{\phi,x})$ and for the auto-regressive component $g_\psi$. The auto-encoder pair is a Flax-implemented reproduction of VQ-GAN from \cite{tamingtransfo}, available on Github: \href{https://github.com/CompVis/taming-transformers for the original}{here} for the original version or \href{https://github.com/patil-suraj/vqgan-jax}{here} for the re-implementation. It is arguably better at rendering image textures and details, as \href{https://colab.research.google.com/github/CompVis/taming-transformers/blob/master/scripts/reconstruction_usage.ipynb}{this notebook} from \citeauthor{tamingtransfo} demonstrates convincingly and from which figure \ref{fig:mushroom} is borrowed. As for the auto-regressive part, instead of constructing a new architecture from scratch as \citeauthor{zeroshot} did, \citeauthor{dalleminigit} opt for adapting an existing model, namely Bart (\cite{bart}), that they fine-tuned to their examples. Unfortunately at this stage the inputs are no longer comparable, as the images are encoded differently, and it becomes difficult to objectively compare \gls{dalle} and \gls{dallemini} at this point. Dissecting the exact architectural details of the two versions would for beyond the scope of this report.
+The major difference comes from the slightly distinct distribution families for the auto-encoder pair $(f_{\theta,z}, h_{\phi,x})$ and for the auto-regressive component $g_\psi$. The auto-encoder pair is a Flax-implemented reproduction of VQ-GAN from \citet{tamingtransfo}, available on Github: \href{https://github.com/CompVis/taming-transformers for the original}{here} for the original version or \href{https://github.com/patil-suraj/vqgan-jax}{here} for the re-implementation. It is arguably better at rendering image textures and details, as \href{https://colab.research.google.com/github/CompVis/taming-transformers/blob/master/scripts/reconstruction_usage.ipynb}{this notebook} from \citeauthor{tamingtransfo} demonstrates convincingly and from which figure \ref{fig:mushroom} is borrowed.
+
+As for the auto-regressive part, instead of constructing a new architecture from scratch as \citeauthor{zeroshot} did, \citeauthor{dalleminigit} opt for adapting an existing model, namely Bart (\cite{bart}), that they fine-tuned to their examples. 
+Note that, as an image $x$ is compressed in the first place into structurally different token sequences $z \in \mathcal{Z}_{\text{Dall}\cdot\text{e}}$ and $z' \in \mathcal{Z}_{\text{Dall}\cdot\text{e Mini}}$ by each of the two models, we stand no chance to objectively compare \gls{dalle} and \gls{dallemini}'s performance on their auto-regressive component.
+Dissecting the exact architectural details of the two versions would go beyond the scope of this report.
 
 The last major difference is the choice of the training dataset, which is much more documented in the case of \gls{dallemini}: Conceptual Captions Dataset (3 million image and caption pairs), Conceptual 12M (12 million pairs) and a sample of YFCC100M (2 million pairs out of 15 million). Table \ref{tab:parameters} summarises all these differences.
 
@@ -617,32 +651,32 @@ The last major difference is the choice of the training dataset, which is much m
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{img/mushroom-vqgan-dvae.png}
-    \caption{Image reconstruction by \gls{dalle}'s dVAE and by \gls{dallemini}'s VQ-VAE}
+    \caption[Image reconstruction]{\textbf{Image reconstruction by \gls{dalle}'s dVAE and by \gls{dallemini}'s VQ-GAN —} From the original mushroom image $x$, we first generate a random compressed image $\tilde z \sim h_{\phi^\star,x}$ using the probabilistic encoder, then a reconstructed random image $\hat x\sim f_{\theta^\star,\tilde z}$ from $\tilde z$ using the probabilistic decoder. Since the whole process is random, each repeated reconstructions of $x$ create slightly different images $\hat x$. Notice how VQ-GAN better reconstructs the details of the photograph.}
     \label{fig:mushroom}
 \end{figure}
 
 
 \begin{table*}[h!]
-    \centering
-    \begin{tabular}{|l|r|r|r|}
-    \hline
-        ~ & \gls{dalle} & \gls{dallemini} & \gls{dalletiny} \\ \hline
-        Tokenizer & GPT-3 (probably) & Bart & Bart \\ \hline
-        Autoencoder & dVAE & VQ-GAN & VQ-GAN \\ \hline
-        Autoregressive component & Sparse transformer & Bart (fine-tuned) & Bart (fine-tuned) \\ \hline \hline
-        Used data set & Custom & Custom & MS COCO 2017 \\ \hline
-        Training set size & $>$ 250M & 15M & 12,134 \\ \hline \hline
-        Caption max length (tokens) $\lt$ & 256 & 255  & 255 \\ \hline
-        Resolution of original images (pixels) $\li$ & 256×256 & 256×256  & 256×256 \\ \hline
-        Res. of compressed im. (tokens) $\llat$ & 32×32 & 16×16 & 16×16 \\ \hline
-        Image codebook size $\clat$ & 8,192 & 16,384  & 16,384 \\ \hline
-        Text codebook size $\ct$ & 16,384 & 50,265 & 50,265 \\ \hline
-    \end{tabular}
-    \caption{Parameters and distribution functions for different versions of \gls{dalle}}
-    \label{tab:parameters}
+\makebox[\textwidth]{
+\begin{tabular}{|l|r|r|r|} \hline
+    ~ & \gls{dalle} & \gls{dallemini} & \gls{dalletiny} \\ \hline   
+    Tokenizer & GPT-3 (probably) & Bart & Bart \\ \hline
+    Autoencoder & dVAE & VQ-GAN & VQ-GAN \\ \hline
+    Autoregressive component & Sparse transformer & Bart (fine-tuned) & Bart (fine-tuned) \\ \hline \hline
+    Used data set & Custom & Custom & MS COCO 2017 \\ \hline
+    Training set size & $>$ 250M & 15M & 12,134 \\ \hline \hline
+    Caption max length (tokens) $\lt$ & 256 & 255  & 255 \\ \hline
+    Resolution of original images (pixels) $\li$ & 256×256 & 256×256  & 256×256 \\ \hline
+    Res. of compressed im. (tokens) $\llat$ & 32×32 & 16×16 & 16×16 \\ \hline
+    Image codebook size $\clat$ & 8,192 & 16,384  & 16,384 \\ \hline
+    Text codebook size $\ct$ & 16,384 & 50,265 & 50,265 \\ \hline
+\end{tabular}
+}
+\caption{\textbf{Parameters and distribution families for different versions of \gls{dalle}}, including our own implementation of DALL-E: \gls{dalletiny}}
+\label{tab:parameters}
 \end{table*}
 
-\section{Data}
+\section{Data} \label{sec:data}
 
 \begin{multicols}{2}
 The dataset used by \gls{dalle} was not released publicly. In this section, we introduce two alternative data sets of image-caption pairs that we use for evaluating the performance of \gls{dallemini} and for training our own \gls{dalletiny} implementation: \textbf{MS-COCO} and \textbf{Flickr30k}.
@@ -680,7 +714,7 @@ We compare the given CLIP score of each caption-image pair and run a colour anal
 
 \end{multicols}
 
-\section{Empirical approach}
+\section{Qualitative and Quantiative Evaluation of DALL-E} \label{sec:dalleval}
 
 \begin{multicols}{2}
 
@@ -693,9 +727,66 @@ The capabilities of text-to-image may be impressive at first sight, but as state
 %    \item CLIP is an integral part of this process since it assigns a score to the images that can be used to draw conclusions. We want to better understand the scores assigned by comparing them to a human judgement and determine if we trust CLIP to judge \gls{dallemini} images.
 %\end{itemize}
 
-\subsection{CLIP}
+\subsection{Text-image adequacy evaluation with CLIP}
+    
+%% Tables qui apparaissent plus bas
+
+\begin{table*}[]
+    \centering
+    \begin{tabular}{ |c|c|c| } 
+    \hline
+    & Mean & Standard deviation \\ 
+    \hline
+    Original images & 32.4 & 3.4 \\ 
+    Generated images & 23.3 & 3.5 \\ 
+    \hline
+    \end{tabular}
+    \caption{Descriptive statistics concerning CLIP's scores of the images}
+    \label{tab:inq-clip}
+\end{table*}
+
+\begin{table*}[]
+    \centering
+    \begin{tabular}{ |c|c|c| } 
+    \hline
+    & Value & p-value (\%) \\ 
+    \hline
+    $\rho$  (Spearman) & 0.09 & 0.39 \\ 
+    r (Pearson) & 0.113 & 0.03 \\ 
+    \hline
+    \end{tabular}
+    \caption{Correlation coefficients}
+    \label{tab:cor-coeffs}
+\end{table*}
+
 
 The reader might remember from earlier sections that CLIP is a model which takes an image-caption pair as input and computes an adequacy score between them. The (absolute) scores range on an unbounded scale where higher scores mean higher adequacy. When dealing with several images, absolute scores can then be rescaled to (relative) probability scores; an example of what CLIP scoring on 10 images looks like can be found in \ref{app:clip-img} along with the best of the 10 images in this case, figures \ref{fig:clip_proba_exemple} and \ref{fig:clip_image_exemple}. But how reliable are these scores? We will test CLIP adequacy with human judgement, but also get a more quantitative look by seeing what CLIP produces when scoring datasets of different qualities and assess its sensitivity to small changes in image quality.
+
+An example of CLIP probability scoring can be found below in figure \ref{fig:clip_scoring} :
+
+\begin{figure}[H]
+\begin{subfigure}{.3\textwidth}
+  \centering
+  \includegraphics[width=.4\linewidth]{img/0.668 a photo of a building 1.jpeg}
+  \caption{Score : 0.668}
+  \label{fig:red_hist}
+\end{subfigure}%
+\begin{subfigure}{.3\textwidth}
+  \centering
+  \includegraphics[width=.4\linewidth]{img/0.128 a photo of a building 2.jpeg}
+  \caption{Score : 0.128}
+  \label{fig:green_hist}
+\end{subfigure}
+\begin{subfigure}{.3\textwidth}
+  \centering
+  \includegraphics[width=.4\linewidth]{img/0.015 a photo of a building 0.jpeg}
+  \caption{Score : 0.015}
+  \label{fig:blue_hist}
+\end{subfigure}
+
+\caption{Generation of 'a photo of a building' with CLIP probability scoring}
+\label{fig:clip_scoring}
+\end{figure}
 
 \subsubsection{CLIP and humans agree on text-image adequacy}
 
@@ -715,6 +806,8 @@ The results can be found in the appendix \ref{app:clip-img}, figure \ref{fig:Hum
 
 \subsubsection{Inquiries on CLIP using Flickr's test set}
 
+
+
 Now that we are confident in CLIP's ability to provide meaningful scores (a qualitative test), we test quantitatively the quality of the images generated by \gls{dallemini} using the model scores. 
 
 Using the whole Flickr test set, for each prompt: 
@@ -723,11 +816,7 @@ Using the whole Flickr test set, for each prompt:
     \item We generate five different images for convenience, then we take the mean of CLIP's scores of the five images, this is the second list of scores.
 \end{itemize}
 
-We obtain:
-\begin{itemize}
-    \item For the gold images (the original images): a mean score of 32.4 with a standard deviation of 3.4.
-    \item For the generated images: a mean score of 23.3 with a standard deviation of 3.5.
-\end{itemize}
+The results are summarized in table \ref{tab:inq-clip}.
 
 The value of these scores (in absolute value) does not represent anything, but shows the magnitude of CLIP's criticism of the generated images.
 
@@ -735,31 +824,13 @@ Using these scores, it seems that CLIP behaves like a good classifier of generat
 
 Now is that a success of CLIP or a failure of \gls{dallemini}?
 
-In an attempt to characterise the quality of the images generated, we compute two correlation coefficients between the two list of CLIP scores, namely Spearman's and Pearson's correlation coefficients. Both yield a small but significant correlation coefficient (at the 5\% level):
-\begin{itemize}
-    \item $\rho$ = 0.09, p-valeur = 0.39\% for Spearman
-    \item r = 0.113, p-valeur = 0.03\% for Pearson
-\end{itemize}
+In an attempt to characterise the quality of the images generated, we compute two correlation coefficients between the two lists of CLIP scores, namely Spearman's and Pearson's correlation coefficients. As shown in table \ref{tab:cor-coeffs}, both yield a small but significant correlation coefficient (at the 5\% level).
+
 Both correlations are close to 10\%. If CLIP is working correctly and the image generation model is good as well, the images generated should be of good quality, and thus their adequacy score with the prompt should be of the same order as those of the original image. Therefore, we expect higher correlation coefficients. 
 
 A possible conclusion is that two images can fit well to a prompt while having different CLIP scores, and thus that CLIP is not adapted for fine comparisons of images, and thus neither for fine comparisons of the image generating models. 
 
-\subsection{Assessment of \gls{dallemini}}
-
-Now that we have a (relatively) valid automated judgement mechanism in the form of the CLIP model, we can turn to our core task, namely assessing the capabilities of \gls{dalle} sister model, \gls{dallemini}. We start with qualitative, human-made assessments, then we explore the practical effect of generative parameters (the theory of which has been presented in section \ref{sec:inference}), before turning to the suggestion of an automated colour-rendering adequacy test.
-
-\subsubsection{Qualitative exploration of generation capabilities}\label{subsubsection:qualitativegeneration}
-
-If the generations of \gls{dalle} that can be found on the Open-AI website suggest an exceptional performance, the possibilities of \gls{dallemini} are more limited. In this section, we perform a series of crafted tests (as opposed to automated ones) to explore the model's capabilities. The objectives of this first qualitative observations are to:
-
-\begin{itemize}
-    \item Gain a good overview of the model by testing a number of features to understand these strengths and weaknesses.
-    \item From this overview, adapt the model parameters to try to refine the prediction results. 
-    \item Find points of approach for a more quantitative analysis of the model, exploitable on \gls{dallemini} as well as on other generation models to be able to compare them.
-\end{itemize}
-
-We generate a multitude of images based on crafted captions. We start with very basic prompts listed in table \ref{tab:prompts}. Examples of such generations can be found in the appendix \ref{app:gen-examples}: figure \ref{fig:first_generations}.
-
+% Table qui apparaît plus bas ?
 \begin{table*}[]
     \centering
     \begin{tabular}{|l|c|r|}
@@ -778,7 +849,23 @@ We generate a multitude of images based on crafted captions. We start with very 
     \label{tab:prompts}
 \end{table*}
 
-The results are ambivalent, most of the images proposed in the appendix give a glimpse of the (partial) success of the model. The layout of some simple shapes or objects (a cube, a table) and the poor management of quantifiers are disappointing.
+\subsection{\gls{dallemini} correctly renders colours and textures, but not concepts, forms, sizes or quantifiers}
+
+Now that we have a (relatively) valid automated judgement mechanism in the form of the CLIP model, we can turn to our core task, namely assessing the capabilities of \gls{dalle} sister model, \gls{dallemini}. We start with qualitative, human-made assessments, then we explore the practical effect of generative parameters (the theory of which has been presented in section \ref{sec:inference}), before turning to the suggestion of an automated colour-rendering adequacy test.
+
+\subsubsection{Qualitative exploration of generation capabilities}\label{subsubsection:qualitativegeneration}
+
+If the generations of \gls{dalle} that can be found on the Open-AI website suggest an exceptional performance, the possibilities of \gls{dallemini} are more limited. In this section, we perform a series of crafted tests (as opposed to automated ones) to explore the model's capabilities. The objectives of this first qualitative observations are to:
+
+\begin{itemize}
+    \item Gain a good overview of the model by testing a number of features to understand these strengths and weaknesses.
+    \item From this overview, adapt the model parameters to try to refine the prediction results. 
+    \item Find points of approach for a more quantitative analysis of the model, exploitable on \gls{dallemini} as well as on other generation models to be able to compare them.
+\end{itemize}
+
+We generate a multitude of images based on crafted captions. We start with very basic prompts listed in table \ref{tab:prompts}. Examples of such generations can be found in the appendix \ref{app:gen-examples}: figure \ref{fig:first_generations}.
+
+The results are ambivalent, most of the images proposed in the appendix give a glimpse of the (partial) success of the model. The layout of some simple shapes or objects (a cube, a table) and the weak management of quantifiers are disappointing.
 However, we are pleasantly surprised by the management of colours and textures, as \gls{dallemini} almost always represents faithfully the requested ones.
 Seemingly innocuous caption changes such as starting your caption with "an image of" is likely to raise the quality of the image produced.
 (This syntactic construction is over-represented in the \gls{dallemini} training dataset, which explains why some apparently longer or more complex captions finally give better results.)
@@ -846,11 +933,11 @@ Finally, the stars and dots at the top of the picture indicate the result of the
 
 From this image and the three available in the appendices, we clearly see that the scores of the image generated are below the score of the original image. On another hand, the different sets of parameters are not leading to radically different CLIP's scores, as none of them are significant at the 5\% level. Therefore, we don't have a clear incentive not to use the standard set of parameters.  
 
-It is important to bear in mind that the tests and confidence intervals used in this part are based on an assumption of gaussianity of the observations. Here, the a sample is the set of the 20 CLIP's scores corresponding to a prompt and a set of parameters; those samples do not seem to be gaussian. This could be due to the limited size of the samples. Therefore, the results should be interpreted cautiously. 
+It is important to bear in mind that the tests and confidence intervals used in this part are based on an assumption of gaussianity of the observations. Here, a  sample is the set of the 20 CLIP's scores corresponding to a prompt and a set of parameters; those samples do not seem to be gaussian. This could be due to the limited size of the samples. Therefore, the results should be interpreted cautiously. 
 
 We conclude that varying the value of top-p and top-k has a low impact (the alternative hypothesis being that CLIP is altogether not suitable for such a task.)
 
-\subsubsection{Colour analysis}
+\subsubsection{Automated evaluation of \gls{dalle} colouring skills}
 
 Generative is notably hard to evaluate, the purpose of this section is thus to focus on a specific aspect of the generation, namely the colours.
 Indeed, our qualitative assessment tends to show \gls{dallemini} can be pretty good at taking into account colour requests, and automating colour detection and matching was feasible.
@@ -881,26 +968,26 @@ We obtain the following dataframe:
     \label{fig:df_color}
 \end{figure}
 
-The results are ambivalent, as they are very dependent on the requested colour in multiple ways: 
+As seen in Figure \ref{fig:df_color}, the results are ambivalent, as they are very dependent on the requested colour in multiple ways: 
 
 \begin{itemize}
     \item Some colours are present by default in any given image (white, black and grey given the permissive threshold).
-    \item The global presence score must be treated carefully, as the images requested may influence it even though no colour is explicitly required (some captions mentioned the sea, therefore the blue in very present on its own in the previous results table).
-    \item Some colours seem to be more represented in the training dataset and thus are more likely to be found in any given image. (When asking for the image of a ball, even though it apparently suggests no colour, in addition to white and black, green and yellow over overrepresented. This could be explained by the presence of many green landscapes in the dataset).
-    \item Apart from the two important parameters for calibrating the colour detection tool, it is also necessary to choose the requested colour (in RGB) with care. If we ask for a colour that is too bright, the conversion to LAB may produce detection results different from what a human would have identified. It is therefore necessary to choose carefully the coding of the requested colours.
+    \item The global presence score must be treated carefully, as the images requested may influence it even though no colour is explicitly required (some captions mentioned the sea, therefore the blue is very present on its own in the previous results table).
+    \item Some colours seem to be more represented in the training dataset and thus are more likely to be found in any given image. (When asking for the image of a ball, even though it apparently suggests no colour, in addition to white and black, green and yellow were overrepresented. This could be explained by the presence of many green landscapes in the dataset).
+    \item Apart from the two important parameters for calibrating the colour detection tool, it is also necessary to choose the requested colour (in RGB) with care. If we ask for a colour that is too bright, the conversion to CIELAB may produce detection results different from what a human would have identified. It is therefore necessary to choose carefully the coding of the requested colours.
 \end{itemize}  
 
 Although with significant variability depending on the choice of colour (in RGB coding), we conclude that \gls{dallemini} is able to understand the colour instructions, but fails to be consistent. Indeed if the presence percentage improves, a qualitative look at the whole images generated shows that either \gls{dallemini} draws it or it does not care at all. However, using this tool to filter multiple generations of the same caption is just a good way to improve the model generation; this tool could complement CLIP to score and rank the images generated from a single caption to find the best to show.
 
 \end{multicols}
 
-\pagebreak
+%\pagebreak
 
-\section{Modelling}
+\section{Implementing and evaluating \gls{dalletiny}, a home-made \gls{dalle}} \label{sec:dalletiny}
 
 \begin{multicols}{2}
 
-In this section, we build our own implementation of \gls{dalle}, dubbed \gls{dalletiny}. Code is located on \href{https://github.com/cthiounn/dalle-tiny}{Github}. In order to reproduce DALLE's functionalities, the first step before implementing is to link the initial paper to the different already available implementations, most notably Boris Dayma's \gls{dallemini} (and more anecdotally Lucidrains' Dall$\cdot$e Pytorch). Then, we pick an image-caption dataset, a \gls{vae} and an autoregressive distribution family. Finally, we train and test our model.
+In this section, we build our own implementation of \gls{dalle}, dubbed \gls{dalletiny}. Code is located on \href{https://github.com/cthiounn/dalle-tiny}{Github} \footnote{https://github.com/cthiounn/dalle-tiny}. In order to reproduce DALLE's functionalities, the first step before implementing is to link the initial paper to the different already available implementations, most notably Boris Dayma's \gls{dallemini} (and more anecdotally Lucidrains' Dall$\cdot$e Pytorch). Then, we pick an image-caption dataset, a \gls{vae} and an autoregressive distribution family. Finally, we train and test our model.
 
 \subsection{Methodology}
 
@@ -944,7 +1031,7 @@ Furthermore, BartModel comes pretrained (with learned parameters) incorporating 
 
 \subsubsection{Training loop design, hyperparameters search and training phase}
 
-Next, we fine-tune our seq2seq model with the training dataset and evaluate it with the testing dataset, through many steps and epochs. (One step is one optimisation step, only limited by the memory capacity of the computers we work on, usually a few images at a time. One epoch is a complete loop over the training set.) The training loop operates with data parallelism and can use multiple \acrshort{gpu}s to compute the prediction of the model. For this computation, the model uses the $256$ image tokens as the target, and the 255 text tokens and the $256-1=255$ image tokens as the input of the prediction.
+Next, we fine-tune our seq2seq/transformer model with the training dataset and evaluate it with the testing dataset, through many steps and epochs. (One step is one optimisation step, only limited by the memory capacity of the computers we work on, usually a few images at a time. One epoch is a complete loop over the training set.) The training loop operates with data parallelism and can use multiple \acrshort{gpu}s to compute the prediction of the model. For this computation, the model uses the $256$ image tokens as the target, and the 255 text tokens and the $256-1=255$ image tokens as the input of the prediction.
 Afterwards, both losses and back-propagation corrections are computed. In order to do so, the loss function is the cross-entropy function which computes the "distance" between a target sequence and a predicted sequence. Since there are many ways to back-propagate, a strategy with the optimiser AdamW with a decay of the learning rate has been implemented.
 Deep learning metrics, such as the mean loss on the testing dataset and the mean loss on a small batch of training dataset are frequently sent to \href{https://wandb.ai/cthiounn/dalle-tiny}{WandB} in order to track different runs and to do a hyper-parameters search.
 We perform a manual hyper-parameters search for choosing the most favourable learning rate and eventually pick a rate around $5\times 10^5$ (with AdamW).
@@ -955,7 +1042,7 @@ To avoid overfitting the training dataset, we stop the training when the mean lo
 
 \subsubsection{Inference phase}
 
-We load the adequately trained-model checkpoint and feed a caption into the text tokeniser and then into the model. The trained model generates a new sequence of image tokens, according to parameters such as top-k, top-p (see section \ref{sec:inference}). Subsequently, the sequence of image tokens is sent into the dVAE's decoder and is translated into a new image.
+We load the adequately trained-model checkpoint and feed a caption into the text tokeniser and then give the result to the model as input. The trained model generates a new sequence of image tokens, according to parameters such as top-k, top-p (see section \ref{sec:inference}). Subsequently, the sequence of image tokens is sent into the dVAE's decoder and is translated into a new image.
 
 \subsection{Other experimentations}
 
@@ -994,19 +1081,23 @@ Freezing the encoder part results in faster overall learning but also in reachin
 
 \section{Conclusion}
 
-\begin{multicols}{2}
+\begin{paracol}{2}
+
 \gls{dalle} and \gls{dallemini} are the State-of-the-art text-to-image models, for generating newer images from a caption. With only \gls{dallemini} being released and with the original article, we manage to grasp the model architecture, to analyse and replicate it, with various successes and failures, in particular generating newer images well-related to the initial caption.
 
 For \gls{dallemini}'s analysis, we found that the model is able to render well landscapes and to manage shape and colour to a certain extent. We analyse \gls{dallemini}'s use of colours and find that \gls{dallemini} generates the right colour requested from the prompt, but inconsistently. 
 
-For our attempt of generating a text-to-image model, we trained a model which managed to generate newer well-composed images but failed to match the initial caption. However, we found that freezing the encoder part of the seq2seq results in both faster learning and overfitting.
+For our attempt of generating a text-to-image model, we trained a model which managed to generate newer well-composed images but failed to match the initial caption. However, we found that freezing the encoder part of the seq2seq/transformer results in both faster learning and overfitting.
+
+\switchcolumn
 
 As of today, Open AI has released a newer version of \gls{dalle}, known as \gls{dalle}$\cdot$2, with a new architecture using a diffusion model. \gls{dalle}$\cdot$2 performs better than the previous version. A showcase of \gls{dalle}$\cdot$2 is available at Open AI's \href{https://openai.com/dall-e-2/}{website}.
 Boris Dayma has also released a new version of \gls{dallemini}, known as DALLE-mega released on \href{https://huggingface.co/spaces/dalle-mini/dalle-mini}{HuggingFace's hub}, trained on a larger curated dataset with a larger model, and using a  \href{https://twitter.com/rivershavewings/status/1478093658716966912}{super conditioning trick}. Dalle-mega shows significant improvements and has improved the consistency and the rendering of colours, shapes and human faces.
 
 To conclude, in a one-year lapse of time, text-to-image models have shown rampant progress and keep improving day after day as more and more researchers delve into the promising text-to-image field as they find better statistical techniques to resolve the text-to-image paradigm.
 
-\end{multicols}
+\end{paracol}
+
 \pagebreak
 \phantomsection
 \addcontentsline{toc}{section}{References}
@@ -1021,9 +1112,10 @@ To conclude, in a one-year lapse of time, text-to-image models have shown rampan
 \printbibliography[
     heading = subbibintoc,
     type=online,
-    title={Online ressources}]
+    title={Online resources}]
     
 \pagebreak
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1043,17 +1135,19 @@ To conclude, in a one-year lapse of time, text-to-image models have shown rampan
 
 \subsection{Latent variables as a solution to the curse of dimensionality} \label{app:latent}
 
-In this section, we provide substance to the first step of the derivation of a tractable objective function, taking roots in our overall goal of estimating the conditional distribution $p(x|y)$. We start with the joint distribution\footnote{We abusively call distribution the density function with respect to the correct mix of Lebesgue and discrete measures. Indeed, recall that $x$ is continuous, whereas $y$ and $z$ are discrete variables. We also abuse notation, not distinguishing the random vectors from their realisations, as is common in Bayesian or machine-learning literature.}: $$p(x,y)$$
+In this section, we provide substance to the first step of the derivation of a tractable objective function, taking roots in our overall goal of estimating the conditional distribution $p(x|y)$.  We start with the joint distribution %\footnote{We abusively call distribution the density function with respect to the correct mix of Lebesgue and discrete measures. Indeed, recall that $x$ is continuous, whereas $y$ and $z$ are discrete variables. We also abuse notation, not distinguishing the random vectors from their realisations, as is common in Bayesian or machine-learning literature.}
+: $$p(x,y)$$
+
 Note that, abstracting from computational issue, we \textit{could} in theory retrieve the conditional distribution: $$p(x|y)=\frac{p(x,y)}{p(y)}=\frac{p(x,y)}{\int_x p(x,y)dx} $$
 Unfortunately both estimating $p(x,y)$ or computing $\int_x p(x,y)dx$ is impossible due to the \textbf{curse of dimensionality}.
 
-The \textbf{curse of dimensionality} is the idea that in high dimensions, the Euclidean space becomes sparser and sparser : observation become further apart from each other and more homogeneously distributed, which makes the very concept of distance meaningless. Alas, distribution estimation relies heavily on the notion of distance. Schematically, if $d$ is the space dimension, reducing uncertainty by a factor $k$ around a distribution $p$ requires an increase of the data set size by a factor of $k^d$. Such a collection is prohibitive for large $d$s !
+The \textbf{curse of dimensionality} is the idea that in high dimensions, the Euclidean space becomes sparser and sparser : observation become further apart from each other and more homogeneously distributed, which makes the very concept of distance meaningless. Alas, distribution estimation relies heavily on the notion of distance. Schematically, if $d$ is the space dimension, reducing uncertainty by a factor $k$ around a distribution $p$ requires an increase of the data set size by a factor of $k^d$. Such a collection becomes prohibitive as becomes $d$ larger!
 
 In our case, the curse hits in two ways. The first blow comes when we want to estimate $p(x,y)$, since $x$ and $y$ both live in a high-dimensional space. The second blow comes when we want to estimate the integral along $x$. (Recall that even for small square images of size $\si$, the actual image space is of size $\di=3\si^2$.)
 
 One solution, retained by \citet{zeroshot}, is to introduce an arbitrary low-dimensional \textbf{latent variable} $z$ to alleviate the curse. By definition of a conditional distribution, we have:
 $$p(x,y,z)=p(x,y | z) p(z)$$
-How does it help? First note that this equation stays true irrespective of the exact distribution $p(z)$. This means that we can choose the distribution to suit our needs. In particular, we may choose any independence assumption between $x$ and $(x,y)$ that leads to tractable computations! Then note that if we choose $z$ so that its dimension be orders of magnitude smaller than $x$'s ($\dl\ll\di$), integrating along $z$ is in principle much easier than integrating over $x$. Thus, it is in theory easier to compute $p(x,y)$ from $p(x,y | z)$ than computing $p(x|y)$ from $p(x,y)$. Specifically:
+How does it help? First note that this equation stays true irrespective of the exact distribution $p(z)$. This means that we can choose the distribution to suit our needs. In particular, we may choose any independence assumption between $z$ and $(x,y)$ that leads to tractable computations! Then note that if we choose $z$ so that its dimension be orders of magnitude smaller than $x$'s ($\dl\ll\di$), integrating along $z$ is in principle much easier than integrating over $x$. Thus, it is in theory easier to compute $p(x,y)$ from $p(x,y | z)$ than computing $p(x|y)$ from $p(x,y)$. Specifically:
 $$p(x,y)=\int_z p(x,y | z) p(z) dz$$
 Finally, note that any expression that can be expressed as $\int_z f(z) p(z) dz=\mathbb{E}_z f(z)$ can be estimated through Monte-Carlo simulation by simulating $n_\text{sim}$ draws from the $z$ distribution, something that will turn out handy for estimating the gradient of the objective function in appendix \ref{app:estimation}. Indeed since any distribution can be chosen, we might as well choose one that is convenient to simulate ! Writing $z_i$ the $i$th draw from $p(z)$, we have:
 $$\int_z f(z) p(z) dz=\mathbb{E}_z f(z)\simeq \frac{1}{n_\text{sim}}\sum_{i=1}^{n_\text{sim}} f(z_i)$$
@@ -1061,6 +1155,7 @@ $$\int_z f(z) p(z) dz=\mathbb{E}_z f(z)\simeq \frac{1}{n_\text{sim}}\sum_{i=1}^{
 \end{multicols}
 
 \clearpage
+
 
 \subsection{\gls{elbo} derivation} \label{app:elbo}
 
@@ -1092,41 +1187,44 @@ l_n(\theta,\psi)&=\ln p_{\theta,\psi}(\mathbf{x}_n,\mathbf{y}_n)=\sum_{i=1}^n \l
 
 \subsection{Derivation of the gradient of the \gls{elbo}} \label{app:elbderivative}
 
-This section provides substance to the claim that the gradient of the \gls{elbo} $\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)$ can be estimated through Monte-Carlo estimation. From appendix \ref{app:latent} we know that any expression of the form $\mathbb{E}_zf(z)$ can be approximated through Monte-Carlo by $\frac{1}{n_\text{sim}}\sum_{i=1}^{n_\text{sim}} f(z_i)$ — it was one of the motivations to introduce latent variables in the first place!
+This section provides substance to the claim that the gradient of the \gls{elbo} $\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi)$ can be estimated through Monte-Carlo estimation. (We do mean \textit{gradient} since $\theta$, $\psi$ and $\phi$ are vectorial.) From appendix \ref{app:latent} we know that any expression of the form $\mathbb{E}_{\tilde z}f(\tilde z)$ can be approximated through Monte-Carlo by $\frac{1}{n_\text{sim}}\sum_{i=1}^{n_\text{sim}} f(z_i)$ — it was one of the motivations to introduce latent variables in the first place! We thus have to express the gradient in such a form.
 
-To see how, we will run through the example for the $\theta$-gradient. The gradients with respect to $\theta$ or $\psi$ follow the same logic, but some tricks are needed for the $\phi$-gradient. (We do mean \textit{gradient} since both $\theta$ and $\psi$ are vectorial.)
-
-\begin{gather*}
+Beginning from the original \gls{elbo} equation (equation \ref{eq:elb_ours}), and noting $\tilde z$ to stress the random nature of this variable, as opposed its concrete realisations noted $z_i$: \begin{equation*}
+\begin{aligned}
+& \underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi) \\
+& =\mathbb{E}_{\tilde z\sim h_{\phi,x}} \Big[\ln f_{\theta,\tilde z}(x)+\ln g_\psi(y,\tilde z) -\ln h_{\phi,x}(\tilde z)\Big]
+\end{aligned}
+\end{equation*}
+... we can express, say, the $\theta$-gradient as: \begin{gather*}
 \nabla_\theta\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi) \\
-= \nabla_\theta \mathbb{E}_{z} \big[ \ln f_{\theta,z}(x) \big] \\
-- \nabla_\theta\underbrace{\mathbb{E}_{z}\Big[\ln h_{\phi,x}(z) - \ln g_\psi(y,z)  \Big]}_{\text{does not depend on }\theta} \\
-= \mathbb{E}_{z} \big[ \nabla_\theta \ln f_{\theta,z}(x) \big]-\mathbf{0} \\
-\sim \frac{1}{n_\text{sim}}\sum_{i=1}^{n_\text{sim}} \nabla_\theta \ln f_{\theta,z}(x)
+= \nabla_\theta \mathbb{E}_{\tilde z} \big[ \ln f_{\theta,\tilde z}(x) \big] \\
+- \nabla_\theta\underbrace{\mathbb{E}_{z}\Big[\ln h_{\phi,x}(\tilde z) - \ln g_\psi(y,\tilde z)  \Big]}_{\text{does not depend on }\theta} \\
+\overset{\text{Leibniz rule}}{=} \mathbb{E}_{\tilde z} \big[ \nabla_\theta \ln f_{\theta,\tilde z}(x) \big]-\mathbf{0} \\
+\sim \frac{1}{n_\text{sim}}\sum_{i=1}^{n_\text{sim}} \nabla_\theta \ln f_{\theta,z_i}(x)
 \end{gather*}
 
-... so, provided that we know the form of $\nabla_\theta \ln f_{\theta,z}(x)$ and that we can generate independent $z_i\sim h_{\phi,x}$, we can estimate the actual gradient. The latter is guaranteed because we are the ones to choose $h_{\phi,x}$. The former ultimately depends on the choice of the $\mathcal{F}$ family of the $f_{\theta,z}$ functions. In practice, if $\mathcal{F}$ is a family of compound functions, whose components are all almost-everywhere differentiable, the gradient $\nabla \theta \ln f_{\theta,z}$ need not be explicit and can be computed on the fly using \textbf{automatic differentiation}. This is the case with most neural networks architecture, and specifically the families considered in the article.
+In other words, provided that we know the form of $\nabla_\theta \ln f_{\theta,z}(x)$ and that we can generate independent $z_i\sim h_{\phi,x}$, we can estimate the actual gradient $\nabla_\theta\underline{\mathscr{l}}_{x,y}$. The latter is guaranteed because we are the ones to choose $h_{\phi,x}$. The former ultimately depends on the choice of the $\mathcal{F}$ family of the $f_{\theta,z}$ functions. In practice, if $\mathcal{F}$ is a family of compound functions, whose components are all almost-everywhere differentiable, the gradient $\nabla \theta \ln f_{\theta,z}$ need not be explicit and can be computed on the fly using \textbf{automatic differentiation}. This is the case with most neural networks architecture, and specifically with the family considered in the article.
 
-The case of the $\phi$-gradient is more subtle. To understand why, notice that the key ingredient in the derivation of an estimator of the gradient is when we pull the $\nabla$-operator \textit{inside} the expectation $\mathbb{E}$. But this only works if the law of the random variable along which we average does not depend on the parameters along which we differentiate. This is no longer the case with $\phi$, since this parameter controls the distribution of $z$!
+The $\psi$-gradient is computed according to the same logic, but the case of the $\phi$-gradient is more subtle. To understand why, notice that the key ingredient in the derivation of an estimator of the gradient is when we pull the $\nabla$-operator \textit{inside} the expectation $\mathbb{E}$ (thanks to the Leibnitz integral rule). But this rule only applies if the law of the random variable in the expectation is independent from the differentiation parameter. This is no longer the case with $\phi$, since this parameter also controls the distribution of $\tilde z$!
 
 The traditional computational work-around, dubbed the \textbf{reparametrisation trick}, consists in making yet another assumption, namely that $z$ can be expressed as:
 $$z=r(\varepsilon, \phi)$$
 ... where $\varepsilon$ is a random variable that does \textit{not} depend on $\phi$ and where $r$ is some function that happens to have (or is designed so to have) that $\partial r_i / \partial \varepsilon_j$ is defined and tractable. (Here, $r_i$ represents the $i$-th component of $r$, and $\varepsilon_j$ the $j$-th component of $\varepsilon$.) For instance, assuming $z$ is of dimension 1, if $z\sim \mathcal{N}(\mu,\sigma^2)$ then define $z=r(\varepsilon, \phi)=\mu+\sigma \varepsilon$ with $\varepsilon\sim\mathcal{N}(0,1)$.
 
-The nice thing is that now, the expectation is defined with respect to $\varepsilon$, which is independent of $\phi$, so that we can interchange the differentiation with the expectation:
-
-\begin{gather*}
-\nabla_\phi\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi) \\
-= \nabla_\phi \mathbb{E}_{z\sim h_{\phi,x}} \big[ \ln f_{\theta,z}(x) \big] \\
-- \nabla_\phi \mathbb{E}_{z\sim h_{\phi,x}}\Big[\ln h_{\phi,x}(z) - \ln g_\psi(y,z)  \Big] \\
-= \nabla_\phi \mathbb{E}_{\varepsilon} \big[ \ln f_{\theta,r(\varepsilon,\phi)}(x) \big] \\
-- \nabla_\phi \mathbb{E}_{\varepsilon}\Big[\ln h_{\phi,x}(r(\varepsilon,\phi)) - \ln g_\psi(y,r(\varepsilon,\phi))  \Big] \\
-= \mathbb{E}_{\varepsilon} \nabla_\phi \big[ \ln f_{\theta,r(\varepsilon,\phi)}(x) \big] \\
-- \mathbb{E}_{\varepsilon} \nabla_\phi \Big[\ln h_{\phi,x}(r(\varepsilon,\phi)) - \ln g_\psi(y,r(\varepsilon,\phi))  \Big]
-\end{gather*}
+The nice thing is that now, the expectation is defined with respect to $\varepsilon$ instead of $z$, and $\varepsilon$ is by definition independent of $\phi$, so that we can interchange the differentiation with the expectation:
+\begin{align*}
+& && \nabla_\phi\underline{\mathscr{l}}_{x,y}(\theta,\psi,\phi) \\
+& = && \nabla_\phi \mathbb{E}_{\tilde z\sim h_{\phi,x}} \big[ \ln f_{\theta,\tilde z}(x) \big] \\
+& && - \nabla_\phi \mathbb{E}_{\tilde z\sim h_{\phi,x}}\Big[\ln h_{\phi,x}(\tilde z) - \ln g_\psi(y,\tilde z)  \Big] \\
+\overset{\substack{\text{repar.}\\ \text{trick}}}&{=} && \nabla_\phi \mathbb{E}_{\tilde \varepsilon} \big[ \ln f_{\theta,r(\tilde \varepsilon,\phi)}(x) \big] \\
+& && - \nabla_\phi \mathbb{E}_{\tilde \varepsilon}\Big[\ln h_{\phi,\tilde x}(r(\tilde \varepsilon,\phi)) - \ln g_\psi(y,r(\tilde \varepsilon,\phi))  \Big] \\
+\overset{\substack{\text{Leibniz}\\ \text{rule}}}&{=} && \mathbb{E}_{\tilde \varepsilon} \nabla_\phi \big[ \ln f_{\theta,r(\tilde \varepsilon,\phi)}(x) \big] \\
+& && - \mathbb{E}_{\tilde \varepsilon} \nabla_\phi \Big[\ln h_{\phi,x}(r(\tilde \varepsilon,\phi)) - \ln g_\psi(y,r(\varepsilon,\phi))  \Big]
+\end{align*}
 
 ... which can be estimated by Monte-Carlo, provided that every component in the expectations is differentiable with respect to $\phi$ and that we know how to sample from the $\varepsilon$ distribution.
 
-Alas, this option is not possible because in our case $z$ is discrete, and there can be no such differentiable $r$ function. Yet another computational trick in the paper, known as the \textbf{Gumbel (soft)max trick}, is to instead use a continuous distribution that converges to a discrete one, as a temperature parameter $\tau$ converges to $0$. This parameter $\tau$ is slowly updated during training. See \citet{gumbelmaxtrick} for an in-depth treatment.
+Alas, this option is not possible in our case because $z$ is discrete, and there can be no such differentiable $r$ function. Yet another computational trick in the paper, known as the \textbf{Gumbel (soft)max trick}, is to instead use a continuous distribution that converges to a discrete one, as a temperature parameter $\tau$ converges to $0$. This parameter $\tau$ is slowly updated during training. See \citet{gumbelmaxtrick} for an in-depth treatment.
 
 \clearpage
 
@@ -1471,6 +1569,8 @@ An issue is that the observations do not seem to belong to a normal distribution
 \mintinline{python}{for token in tokenizer.encode(phrase) :} \newline 
 \mintinline{python}{    print(vocab[token])} \newline
 
+\pagebreak
+
 \section{Generated images by \gls{dalletiny}}\label{section:imagedalletiny}
 
 \begin{figure}[h!]
@@ -1542,6 +1642,7 @@ An issue is that the observations do not seem to belong to a normal distribution
     
 
 \end{figure}
+
 \end{appendix}
 
 \end{document}
