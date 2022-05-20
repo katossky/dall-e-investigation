@@ -1259,7 +1259,7 @@ In the end, the estimation (optimisation) procedure performed by \citet{zeroshot
     \item Move parameters according to the estimated gradient, which for the sake of simplicity we present as: $$\psi_{t+1}=\psi_{t}+r_t\hat{\nabla}\underline{\mathscr{l}}_{\xn,\yn}(\theta_{t},\phi_{t})$$
     \item Update the learning rate $r_t$.
     \end{enumerate}
-    \item The estimation is finished. Set $(\hat \theta, \hat \psi, \hat \phi)=(\theta_{t_1}, \psi_{t_2}, \phi_{t_1})$
+    \item The estimation is finished. Set $(\hat \theta, \hat \psi, \hat \phi)=(\theta_{t_1}, \psi_{t_2}, \phi_{t_1})$.
 \end{enumerate}
 
 \end{multicols}
@@ -1272,7 +1272,7 @@ In the end, the estimation (optimisation) procedure performed by \citet{zeroshot
 
 CLIP stands for "Contrastive Language Pre-Training." This model is a neural network that was developed in order to associate an image with the best text description among several possibilities. The goal of this model is to be able to achieve this association in a non-specific way (zero-shot learning), unlike neural networks trained for recognition in a particular field. In order to be as generalist as possible, the model was trained on 400 million image-text pairs. 
 
-The input of the model is not exactly a set of images and texts. Instead, the text is going through a text encoder and the images are passing through an image encoder. The vectors in the condensed space (or embedding space) obtained after this are integrated in matrix, with all the vectors for each piece of text and each image.
+The input of the model is not exactly a set of images and texts. Instead, the text is going through a text encoder and the images are passing through an image encoder. The vectors in the condensed space (or embedding space) obtained after this are integrated in a matrix, with all the vectors for each piece of text and each image.
 
 At training time, the model receives $N \times N$ images-texts pairs (in the matrix described before) of which there are $N \times 1$ correct pairs and $N\times(N-1)$ incorrect pairs. Its goal is to maximise a measure of similarity between the correct pairs and to minimise that of the incorrect pairs. 
 
@@ -1474,7 +1474,7 @@ The black dots are indicating the empirical mean for each set of parameters on t
 Finally, the stars and dots at the top of the picture indicate the result of the different tests. 
 \begin{itemize}
     \item The black symbols refer to the test of comparison with the score of the original image (grey line), one star indicates significance at 5\%, two stars for 1\%.
-    \item  The red symbols are referring to the test of comparison with the standard set of parameters. One star indicates significance at 5\%, two stars for 1\%, but it is not the case in our results. Two dots indicate significance at 10\%, one dot for 20\%. 
+    \item  The red symbols are referring to the test of comparison with the standard set of parameters (mean comparison). One star indicates significance at 5\%, two stars for 1\%, but it is not the case in our results. Two dots indicate significance at 10\%, one dot for 20\%. 
 \end{itemize}
 The prompt used in this experiment is readable on the top of each figure.
 
@@ -1484,21 +1484,21 @@ An issue is that the observations do not seem to belong to a normal distribution
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale = 0.8]{bwhite-dog.png}
+    \includegraphics[scale=0.8]{bwhite-dog.png}
     \caption{Parameters variation for the prompt "A picture of a black and white dog is running in a grassy garden surrounded by a white fence."}
     \label{fig:gen-bwhite-dog}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale = 0.8]{young-female.png}
+    \includegraphics[scale=0.8]{young-female.png}
     \caption{Parameters variation for the prompt "A picture of a young female student performing a downward kick to break a board held by her Karate instructor"}
     \label{fig:gen-young-female}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale = 0.8]{sunset.png}
+    \includegraphics[scale=0.8]{sunset.png}
     \caption{Parameters variation for the synthetic prompt "A picture of a 
     sunset over snow-capped mountains"}
     \label{fig:gen-sunset}
